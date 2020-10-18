@@ -2451,6 +2451,19 @@ private:
                                node* left, node* right,
                                InnerNode* left_parent, InnerNode* right_parent,
                                InnerNode* parent, unsigned int parentslot) {
+        TLX_BTREE_ASSERT(!left || (left_parent && (
+            (parentslot == 0) ?
+            (left_parent != parent &&
+             left_parent->childid[left_parent->slotuse] == left) :
+            (left_parent == parent &&
+             left_parent->childid[parentslot - 1] == left))));
+        TLX_BTREE_ASSERT(!right || (right_parent && (
+            (parentslot == parent->slotuse) ?
+            (right_parent != parent &&
+             right_parent->childid[0] == right) :
+            (right_parent == parent &&
+             right_parent->childid[parentslot + 1] == right))));
+
         if (curr->is_leafnode())
         {
             LeafNode* leaf = static_cast<LeafNode*>(curr);
@@ -2595,8 +2608,8 @@ private:
             if (slot == 0) {
                 myleft =
                     (left == nullptr) ? nullptr :
-                    static_cast<InnerNode*>(left)->childid[left->slotuse - 1];
-                myleft_parent = left_parent;
+                    static_cast<InnerNode*>(left)->childid[left->slotuse];
+                myleft_parent = left_inner;
             }
             else {
                 myleft = inner->childid[slot - 1];
@@ -2607,7 +2620,7 @@ private:
                 myright =
                     (right == nullptr) ? nullptr :
                     static_cast<InnerNode*>(right)->childid[0];
-                myright_parent = right_parent;
+                myright_parent = right_inner;
             }
             else {
                 myright = inner->childid[slot + 1];
@@ -2781,6 +2794,20 @@ private:
                                 node* left, node* right,
                                 InnerNode* left_parent, InnerNode* right_parent,
                                 InnerNode* parent, unsigned int parentslot) {
+        TLX_BTREE_ASSERT(!left || (left_parent && (
+            (parentslot == 0) ? (left_parent != parent &&
+                                 left_parent->childid[left_parent->slotuse] ==
+                                    left) :
+                                (left_parent == parent &&
+                                 left_parent->childid[parentslot - 1] == left)))
+        );
+        TLX_BTREE_ASSERT(!right || (right_parent && (
+            (parentslot == parent->slotuse) ?
+            (right_parent != parent &&
+             right_parent->childid[0] == right) :
+            (right_parent == parent &&
+             right_parent->childid[parentslot + 1] == right))));
+
         if (curr->is_leafnode())
         {
             LeafNode* leaf = static_cast<LeafNode*>(curr);
@@ -2948,8 +2975,8 @@ private:
                 if (slot == 0) {
                     myleft = (left == nullptr) ? nullptr
                              : static_cast<InnerNode*>(left)->childid[
-                        left->slotuse - 1];
-                    myleft_parent = left_parent;
+                        left->slotuse];
+                    myleft_parent = left_inner;
                 }
                 else {
                     myleft = inner->childid[slot - 1];
@@ -2959,7 +2986,7 @@ private:
                 if (slot == inner->slotuse) {
                     myright = (right == nullptr) ? nullptr
                               : static_cast<InnerNode*>(right)->childid[0];
-                    myright_parent = right_parent;
+                    myright_parent = right_inner;
                 }
                 else {
                     myright = inner->childid[slot + 1];
