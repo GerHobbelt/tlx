@@ -23,6 +23,7 @@
 #include <memory>
 #include <ostream>
 #include <utility>
+#include <type_traits>
 
 namespace tlx {
 
@@ -98,6 +99,11 @@ struct btree_default_traits {
     //! than this threshold. See notes at
     //! http://panthema.net/2013/0504-STX-B+Tree-Binary-vs-Linear-Search
     static const size_t binsearch_threshold = 256;
+
+    // The type of the ranks (subtree counts) in the tree. The rank
+    // info is enabled only when std::is_arithmetic_v<RankType> == true.
+    // Disabled by default.
+    typedef void rank_type;
 };
 
 /*!
@@ -173,7 +179,7 @@ public:
     //! \}
 
 public:
-    //! \name Static Constant Options and Values of the B+ Tree
+    //! \name Static Constant Options, Values and Types of the B+ Tree
     //! \{
 
     //! Base B+ tree parameter: The number of key/data slots in each leaf
@@ -201,6 +207,12 @@ public:
     //! algorithms change the tree. Requires the header file to be compiled
     //! with TLX_BTREE_DEBUG and the key type must be std::ostream printable.
     static const bool debug = traits::debug;
+
+    //! The type of the ranks (subtree counts).
+    typedef typename traits::rank_type rank_type;
+
+    //! Computed parameter: whether to enable ranks (subtree counts).
+    static constexpr bool enable_ranks = std::is_arithmetic_v<rank_type>;
 
     //! \}
 
@@ -232,10 +244,7 @@ private:
 
     //! Extended structure of a inner node in-memory. Contains only keys and no
     //! data items.
-    struct InnerNode : public node {
-        //! Define an related allocator for the InnerNode structs.
-        typedef typename Allocator::template rebind<InnerNode>::other alloc_type;
-
+    struct InnerNodeBase: public node {
         //! Keys of children or data pointers
         key_type slotkey[inner_slotmax]; // NOLINT
 
@@ -267,6 +276,28 @@ private:
             return (node::slotuse < inner_slotmin);
         }
     };
+
+    //! The inner node of a standard B+ tree.
+    template<class RankType, class = void>
+    struct InnerNodeImpl: public InnerNodeBase {
+        //! Define an related allocator for the InnerNodeImpl structs.
+        typedef InnerNodeImpl<RankType> Self;
+        typedef typename Allocator::template rebind<Self>::other alloc_type;
+    };
+
+    //! The inner node a ranked B+ tree.
+    template<class RankType>
+    struct InnerNodeImpl<RankType,
+        std::enable_if_t<std::is_arithmetic_v<RankType>>
+    >: public InnerNodeBase {
+        typedef InnerNodeImpl<RankType> Self;
+        typedef typename Allocator::template rebind<Self>::other alloc_type;
+
+        //! The subtree counts of the children.
+        RankType counts[inner_slotmax + 1];
+    };
+
+    typedef InnerNodeImpl<rank_type> InnerNode;
 
     //! Extended structure of a leaf node in memory. Contains pairs of keys and
     //! data items. Key and data slots are kept together in value_type.
@@ -1825,6 +1856,10 @@ private:
             newinner->slotuse = inner->slotuse;
             std::copy(inner->slotkey, inner->slotkey + inner->slotuse,
                       newinner->slotkey);
+            if constexpr (enable_ranks) {
+                std::copy(inner->counts, inner->counts + inner->slotuse + 1,
+                    newinner->counts);
+            }
 
             for (unsigned short slot = 0; slot <= inner->slotuse; ++slot)
             {
@@ -1897,6 +1932,10 @@ private:
 
             newroot->childid[0] = root_;
             newroot->childid[1] = newchild;
+            if constexpr (enable_ranks) {
+                newroot->counts[0] = recompute_subtree_counts(root_);
+                newroot->counts[1] = recompute_subtree_counts(newchild);
+            }
 
             newroot->slotuse = 1;
 
@@ -1928,7 +1967,6 @@ private:
     std::pair<iterator, bool> insert_descend(
         node* n, const key_type& key, const value_type& value,
         key_type* splitkey, node** splitnode) {
-
         if (!n->is_leafnode())
         {
             InnerNode* inner = static_cast<InnerNode*>(n);
@@ -1944,6 +1982,17 @@ private:
             std::pair<iterator, bool> r =
                 insert_descend(inner->childid[slot],
                                key, value, &newkey, &newchild);
+
+            if constexpr (enable_ranks) {
+                if (r.second) {
+                    if (newchild) {
+                        inner->counts[slot] = recompute_subtree_counts(
+                            inner->childid[slot]);
+                    } else {
+                        ++inner->counts[slot];
+                    }
+                }
+            }
 
             if (newchild)
             {
@@ -2017,9 +2066,18 @@ private:
                 std::copy_backward(
                     inner->childid + slot, inner->childid + inner->slotuse + 1,
                     inner->childid + inner->slotuse + 2);
+                if constexpr (enable_ranks) {
+                    std::copy_backward(inner->counts + slot + 1,
+                                       inner->counts + inner->slotuse + 1,
+                                       inner->counts + inner->slotuse + 2);
+                }
 
                 inner->slotkey[slot] = newkey;
                 inner->childid[slot + 1] = newchild;
+                if constexpr (enable_ranks) {
+                    inner->counts[slot + 1] =
+                        recompute_subtree_counts(newchild);
+                }
                 inner->slotuse++;
             }
 
@@ -2136,6 +2194,11 @@ private:
                   newinner->slotkey);
         std::copy(inner->childid + mid + 1, inner->childid + inner->slotuse + 1,
                   newinner->childid);
+        if constexpr (enable_ranks) {
+            std::copy(inner->counts + mid + 1,
+                      inner->counts + inner->slotuse + 1,
+                      newinner->counts);
+        }
 
         inner->slotuse = mid;
 
@@ -2231,9 +2294,15 @@ public:
             {
                 n->slotkey[s] = leaf->key(leaf->slotuse - 1);
                 n->childid[s] = leaf;
+                if constexpr (enable_ranks) {
+                    n->counts[s] = recompute_subtree_counts(leaf);
+                }
                 leaf = leaf->next_leaf;
             }
             n->childid[n->slotuse] = leaf;
+            if constexpr (enable_ranks) {
+                n->counts[n->slotuse] = recompute_subtree_counts(leaf);
+            }
 
             // track max key of any descendant.
             nextlevel[i].first = n;
@@ -2275,9 +2344,17 @@ public:
                 {
                     n->slotkey[s] = *nextlevel[inner_index].second;
                     n->childid[s] = nextlevel[inner_index].first;
+                    if constexpr (enable_ranks) {
+                        n->counts[s] = recompute_subtree_counts(
+                            nextlevel[inner_index].first);
+                    }
                     ++inner_index;
                 }
                 n->childid[n->slotuse] = nextlevel[inner_index].first;
+                if constexpr (enable_ranks) {
+                    n->counts[n->slotuse] = recompute_subtree_counts(
+                        nextlevel[inner_index].first);
+                }
 
                 // reuse nextlevel array for parents, because we can overwrite
                 // slots we've already consumed.
@@ -2643,6 +2720,10 @@ private:
                 return result;
             }
 
+            if constexpr (enable_ranks) {
+                --inner->counts[slot];
+            }
+
             if (result.has(btree_update_lastkey))
             {
                 if (parent && parentslot < parent->slotuse)
@@ -2682,6 +2763,14 @@ private:
                     inner->childid + slot + 1,
                     inner->childid + inner->slotuse + 1,
                     inner->childid + slot);
+                if constexpr (enable_ranks) {
+                    TLX_BTREE_ASSERT(slot + 1 <= inner->slotuse);
+                    inner->counts[slot] += inner->counts[slot + 1];
+                    std::copy(
+                        inner->counts + slot + 2,
+                        inner->counts + inner->slotuse + 1,
+                        inner->counts + slot + 1);
+                }
 
                 inner->slotuse--;
 
@@ -3017,6 +3106,10 @@ private:
             if (slot > inner->slotuse)
                 return btree_not_found;
 
+            if constexpr (enable_ranks) {
+                --inner->counts[slot];
+            }
+
             result_t myres = btree_ok;
 
             if (result.has(btree_update_lastkey))
@@ -3251,6 +3344,8 @@ private:
 
         TLX_BTREE_ASSERT(left->slotuse < right->slotuse);
         TLX_BTREE_ASSERT(parent->childid[parentslot] == left);
+        TLX_BTREE_ASSERT(parentslot + 1 <= parent->slotuse);
+        TLX_BTREE_ASSERT(parent->childid[parentslot + 1] == right);
 
         unsigned int shiftnum = (right->slotuse - left->slotuse) >> 1;
 
@@ -3275,6 +3370,11 @@ private:
 
         right->slotuse -= shiftnum;
 
+        if constexpr (enable_ranks) {
+            parent->counts[parentslot] += shiftnum;
+            parent->counts[parentslot + 1] -= shiftnum;
+        }
+
         // fixup parent
         if (parentslot < parent->slotuse) {
             parent->slotkey[parentslot] = left->key(left->slotuse - 1);
@@ -3295,6 +3395,8 @@ private:
 
         TLX_BTREE_ASSERT(left->slotuse < right->slotuse);
         TLX_BTREE_ASSERT(parent->childid[parentslot] == left);
+        TLX_BTREE_ASSERT(parentslot + 1 <= parent->slotuse);
+        TLX_BTREE_ASSERT(parent->childid[parentslot + 1] == right);
 
         unsigned int shiftnum = (right->slotuse - left->slotuse) >> 1;
 
@@ -3333,6 +3435,10 @@ private:
                   left->slotkey + left->slotuse);
         std::copy(right->childid, right->childid + shiftnum,
                   left->childid + left->slotuse);
+        if constexpr (enable_ranks) {
+            std::copy(right->counts, right->counts + shiftnum,
+                    left->counts + left->slotuse);
+        }
 
         left->slotuse += shiftnum - 1;
 
@@ -3346,8 +3452,23 @@ private:
         std::copy(
             right->childid + shiftnum, right->childid + right->slotuse + 1,
             right->childid);
+        if constexpr (enable_ranks) {
+            std::copy(right->counts + shiftnum,
+                      right->counts + right->slotuse + 1,
+                      right->counts);
+        }
 
         right->slotuse -= shiftnum;
+
+        // update counts in the parent
+        if constexpr (enable_ranks) {
+            rank_type delta_counts = std::accumulate(
+                left->counts + left->slotuse - (shiftnum - 1),
+                left->counts + left->slotuse + 1,
+                0);
+            parent->counts[parentslot] += delta_counts;
+            parent->counts[parentslot + 1] -= delta_counts;
+        }
     }
 
     //! Balance two leaf nodes. The function moves key/data pairs from left to
@@ -3363,6 +3484,8 @@ private:
         TLX_BTREE_ASSERT(parent->childid[parentslot] == left);
 
         TLX_BTREE_ASSERT(left->slotuse > right->slotuse);
+        TLX_BTREE_ASSERT(parentslot < parent->slotuse);
+        TLX_BTREE_ASSERT(parent->childid[parentslot + 1] == right);
 
         unsigned int shiftnum = (left->slotuse - right->slotuse) >> 1;
 
@@ -3403,6 +3526,11 @@ private:
 
         left->slotuse -= shiftnum;
 
+        if constexpr (enable_ranks) {
+            parent->counts[parentslot] -= shiftnum;
+            parent->counts[parentslot + 1] += shiftnum;
+        }
+
         parent->slotkey[parentslot] = left->key(left->slotuse - 1);
     }
 
@@ -3416,6 +3544,8 @@ private:
 
         TLX_BTREE_ASSERT(left->slotuse > right->slotuse);
         TLX_BTREE_ASSERT(parent->childid[parentslot] == left);
+        TLX_BTREE_ASSERT(parentslot + 1 <= parent->slotuse);
+        TLX_BTREE_ASSERT(parent->childid[parentslot + 1] == right);
 
         unsigned int shiftnum = (left->slotuse - right->slotuse) >> 1;
 
@@ -3449,6 +3579,11 @@ private:
         std::copy_backward(
             right->childid, right->childid + right->slotuse + 1,
             right->childid + right->slotuse + 1 + shiftnum);
+        if constexpr (enable_ranks) {
+            std::copy_backward(
+                right->counts, right->counts + right->slotuse + 1,
+                right->counts + right->slotuse + 1 + shiftnum);
+        }
 
         right->slotuse += shiftnum;
 
@@ -3464,12 +3599,26 @@ private:
         std::copy(left->childid + left->slotuse - shiftnum + 1,
                   left->childid + left->slotuse + 1,
                   right->childid);
+        if constexpr (enable_ranks) {
+            std::copy(left->counts + left->slotuse - shiftnum + 1,
+                      left->counts + left->slotuse + 1,
+                      right->counts);
+        }
 
         // copy the first to-be-removed key from the left node to the parent's
         // decision slot
         parent->slotkey[parentslot] = left->slotkey[left->slotuse - shiftnum];
 
         left->slotuse -= shiftnum;
+
+        if constexpr (enable_ranks) {
+            rank_type delta_counts = std::accumulate(
+                right->counts,
+                right->counts + shiftnum + 1,
+                0);
+            parent->counts[parentslot] -= delta_counts;
+            parent->counts[parentslot + 1] += delta_counts;
+        }
     }
 
     //! \}
@@ -3583,9 +3732,12 @@ public:
 
 private:
     //! Recursively descend down the tree and verify each node
-    void verify_node(const node* n, key_type* minkey, key_type* maxkey,
+    template<bool b = enable_ranks>
+    std::conditional_t<b, rank_type, void>
+    verify_node(const node* n, key_type* minkey, key_type* maxkey,
                      tree_stats& vstats) const {
-        TLX_BTREE_PRINT("verifynode " << n);
+        TLX_BTREE_PRINT("verifynode " << n << ", counts = "
+            << recompute_subtree_counts(n));
 
         if (n->is_leafnode())
         {
@@ -3605,6 +3757,11 @@ private:
 
             vstats.leaves++;
             vstats.size += leaf->slotuse;
+
+            if constexpr (enable_ranks) {
+                TLX_BTREE_PRINT("counts = " << leaf->slotuse);
+                return leaf->slotuse;
+            }
         }
         else // !n->is_leafnode()
         {
@@ -3627,7 +3784,13 @@ private:
                 key_type submaxkey = key_type();
 
                 tlx_die_unless(subnode->level + 1 == inner->level);
-                verify_node(subnode, &subminkey, &submaxkey, vstats);
+                if constexpr (enable_ranks) {
+                    rank_type cnt = verify_node(
+                        subnode, &subminkey, &submaxkey, vstats);
+                    tlx_die_unless(cnt == inner->counts[slot]);
+                } else {
+                    verify_node(subnode, &subminkey, &submaxkey, vstats);
+                }
 
                 TLX_BTREE_PRINT("verify subnode " << subnode <<
                                 ": " << subminkey <<
@@ -3673,6 +3836,10 @@ private:
                     tlx_die_unless(leafa == leafb->prev_leaf);
                 }
             }
+
+            if constexpr (enable_ranks) {
+                return recompute_subtree_counts(inner);
+            }
         }
     }
 
@@ -3713,6 +3880,25 @@ private:
         }
 
         tlx_die_unless(testcount == size());
+    }
+
+    //! \}
+
+private:
+    //! \name Private functions for ranks (subtree counts).
+    //! \{
+
+    template<bool b = enable_ranks>
+    static std::enable_if_t<b, rank_type> recompute_subtree_counts(
+        const node *n) {
+        if (n->is_leafnode()) {
+            return static_cast<rank_type>(n->slotuse);
+        } else {
+            const InnerNode *inner = static_cast<const InnerNode*>(n);
+            return std::accumulate(inner->counts,
+                                   inner->counts + inner->slotuse + 1,
+                                   0);
+        }
     }
 
     //! \}
