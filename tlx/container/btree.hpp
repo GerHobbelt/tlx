@@ -2746,6 +2746,23 @@ private:
 
             if (result.has(btree_fixmerge))
             {
+                // fix the counts now before slot get incremented (in case
+                // it is the next being empty)
+                if constexpr (enable_ranks) {
+                    if (inner->childid[slot]->slotuse != 0) {
+                        // slot + 1 is merged into slot
+                        inner->counts[slot] += inner->counts[slot + 1];
+                        TLX_BTREE_ASSERT(slot < inner->slotuse &&
+                            inner->counts[slot] ==
+                            recompute_subtree_counts(inner->childid[slot]));
+                    } else {
+                        // slot is merged into slot - 1
+                        inner->counts[slot - 1] += inner->counts[slot];
+                        TLX_BTREE_ASSERT(slot > 0 && inner->counts[slot - 1] ==
+                            recompute_subtree_counts(inner->childid[slot - 1]));
+                    }
+                }
+
                 // either the current node or the next is empty and should be
                 // removed
                 if (inner->childid[slot]->slotuse != 0)
@@ -2764,12 +2781,10 @@ private:
                     inner->childid + inner->slotuse + 1,
                     inner->childid + slot);
                 if constexpr (enable_ranks) {
-                    TLX_BTREE_ASSERT(slot + 1 <= inner->slotuse);
-                    inner->counts[slot] += inner->counts[slot + 1];
                     std::copy(
-                        inner->counts + slot + 2,
+                        inner->counts + slot + 1,
                         inner->counts + inner->slotuse + 1,
-                        inner->counts + slot + 1);
+                        inner->counts + slot);
                 }
 
                 inner->slotuse--;
@@ -3133,6 +3148,23 @@ private:
 
             if (result.has(btree_fixmerge))
             {
+                // fix the counts now before slot get incremented (in case
+                // it is the next being empty)
+                if constexpr (enable_ranks) {
+                    if (inner->childid[slot]->slotuse != 0) {
+                        // slot + 1 is merged into slot
+                        inner->counts[slot] += inner->counts[slot + 1];
+                        TLX_BTREE_ASSERT(slot < inner->slotuse &&
+                            inner->counts[slot] ==
+                            recompute_subtree_counts(inner->childid[slot]));
+                    } else {
+                        // slot is merged into slot - 1
+                        inner->counts[slot - 1] += inner->counts[slot];
+                        TLX_BTREE_ASSERT(slot > 0 && inner->counts[slot - 1] ==
+                            recompute_subtree_counts(inner->childid[slot - 1]));
+                    }
+                }
+
                 // either the current node or the next is empty and should be
                 // removed
                 if (inner->childid[slot]->slotuse != 0)
@@ -3150,6 +3182,12 @@ private:
                     inner->childid + slot + 1,
                     inner->childid + inner->slotuse + 1,
                     inner->childid + slot);
+                if constexpr (enable_ranks) {
+                    std::copy(
+                        inner->counts + slot + 1,
+                        inner->counts + inner->slotuse + 1,
+                        inner->counts + slot);
+                }
 
                 inner->slotuse--;
 
