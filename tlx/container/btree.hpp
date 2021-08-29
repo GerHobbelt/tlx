@@ -24,6 +24,7 @@
 #include <ostream>
 #include <utility>
 #include <type_traits>
+#include <numeric>
 
 namespace tlx {
 
@@ -3503,7 +3504,7 @@ private:
             rank_type delta_counts = std::accumulate(
                 left->counts + left->slotuse - (shiftnum - 1),
                 left->counts + left->slotuse + 1,
-                0);
+                (rank_type)0);
             parent->counts[parentslot] += delta_counts;
             parent->counts[parentslot + 1] -= delta_counts;
         }
@@ -3653,7 +3654,7 @@ private:
             rank_type delta_counts = std::accumulate(
                 right->counts,
                 right->counts + shiftnum + 1,
-                0);
+				(rank_type)0);
             parent->counts[parentslot] -= delta_counts;
             parent->counts[parentslot + 1] += delta_counts;
         }
@@ -3935,7 +3936,7 @@ private:
             const InnerNode *inner = static_cast<const InnerNode*>(n);
             return std::accumulate(inner->counts,
                                    inner->counts + inner->slotuse + 1,
-                                   0);
+                                   (rank_type)0);
         }
     }
 
