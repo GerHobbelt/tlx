@@ -43,7 +43,14 @@ static void test_empty_chain_add() {
     die_unequal(chain3(5), "52");
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_function_chain_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_chain_maker();
     test_empty_chain_add();
 

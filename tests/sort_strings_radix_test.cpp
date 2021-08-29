@@ -28,7 +28,7 @@
 
 using namespace tlx::sort_strings_detail;
 
-void TestFrontend(const size_t num_strings, const size_t num_chars,
+static void TestFrontend(const size_t num_strings, const size_t num_chars,
                   const std::string& letters) {
 
     std::default_random_engine rng(seed);
@@ -74,7 +74,7 @@ void TestFrontend(const size_t num_strings, const size_t num_chars,
         delete[] cstrings[i];
 }
 
-void test_all(const size_t num_strings) {
+static void test_all(const size_t num_strings) {
 
     if (num_strings <= 1024) {
         run_tests(insertion_sort);
@@ -83,7 +83,14 @@ void test_all(const size_t num_strings) {
     TestFrontend(num_strings, 16, letters_alnum);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_sort_strings_radix_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // run tests
     test_all(16);
     test_all(256);

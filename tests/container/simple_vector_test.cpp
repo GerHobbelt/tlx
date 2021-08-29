@@ -38,7 +38,14 @@ template class SimpleVector<MyInteger2>;
 
 } // namespace tlx
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_simple_vector_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     tlx::SimpleVector<MyInteger> x;
     die_unequal(x.size(), 0u);
 

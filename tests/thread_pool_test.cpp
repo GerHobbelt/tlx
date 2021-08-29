@@ -120,7 +120,14 @@ void test_init_thread() {
     die_unequal(count.load(), (7 * 8) / 2u);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_thread_pool_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_loop_until_empty();
 
     for (size_t i = 0; i < 10; ++i)

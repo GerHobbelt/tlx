@@ -16,7 +16,7 @@
 #include <tlx/die.hpp>
 #include <tlx/logger.hpp>
 
-void test1() {
+static void test1() {
     tlx::PolynomialRegression<double, /* WithStore */ true> pr(2);
 
     pr.add(0, 0);
@@ -29,7 +29,7 @@ void test1() {
     die_unequal_eps6(pr.r_square(), 1.0);
 }
 
-void test2() {
+static void test2() {
     tlx::PolynomialRegression<double, /* WithStore */ true> pr(2);
 
     pr.add(0, 1);
@@ -43,7 +43,7 @@ void test2() {
     die_unequal_eps6(pr.r_square(), 1.0);
 }
 
-void test3() {
+static void test3() {
     tlx::PolynomialRegression<double, /* WithStore */ true> pr(2);
 
     pr.add(0, 1);
@@ -57,7 +57,7 @@ void test3() {
     die_unequal_eps6(pr.r_square(), 0.7);
 }
 
-void test4() {
+static void test4() {
     tlx::PolynomialRegression<double, /* WithStore */ false> pr(2);
 
     pr.add(0, 1);
@@ -71,7 +71,7 @@ void test4() {
     die_unequal_eps6(pr.r_square(), NAN);
 }
 
-void test5() {
+static void test5() {
     tlx::PolynomialRegression<double, /* WithStore */ true> pr(2);
 
     pr.add(0, 1);
@@ -106,7 +106,7 @@ void dump(PolynomialRegression& pr, double xmin, double xmax) {
     }
 }
 
-void test6() {
+static void test6() {
     tlx::PolynomialRegression<double, /* WithStore */ false> pr0(0);
 
     pr0.add(0, 1);
@@ -163,7 +163,14 @@ void test6() {
     die_unequal_eps6(pr3u.evaluate(2), 4.0);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_polynomial_regression_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test1();
     test2();
     test3();

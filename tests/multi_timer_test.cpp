@@ -17,7 +17,14 @@
 
 #include <tlx/die.hpp>
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_multi_timer_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     tlx::MultiTimer mtimer;
 
     mtimer.start("first");

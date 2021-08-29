@@ -39,7 +39,14 @@ static void test_semaphore() {
     t2.join();
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_semaphore_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_semaphore();
 
     return 0;

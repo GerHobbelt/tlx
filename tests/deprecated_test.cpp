@@ -18,7 +18,14 @@ TLX_DEPRECATED_FUNC_DEF(int also_do_not_use()) {
     return 0;
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_deprecated_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     do_not_use_me_anymore();
     also_do_not_use();
 

@@ -41,15 +41,21 @@ void Gamma::unroll<0>(double) {
 
 } // namespace Nu
 
-void test1() {
+static void test1() {
     Nu::Alpha<int>::Beta().func(42);
     Nu::Alpha<const char*>::Beta().func("42");
     Nu::Alpha<Nu::Alpha<std::map<int, double> > >::Beta().func();
     Nu::Gamma().unroll<5>(42.0);
 }
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_backtrace_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test1();
 
     return 0;

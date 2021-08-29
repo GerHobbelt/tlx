@@ -37,8 +37,14 @@ static IntegerPtr MakeIntegerPtr() {
     return tlx::make_counting<MyIntegerRC>(24);
 }
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_counting_ptr_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     count_deletes = 0;
     {
         {

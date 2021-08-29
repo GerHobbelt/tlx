@@ -382,7 +382,14 @@ void test_sha1() {
         "50abf5706a150990a08b2c5ea40fa0e585554732");
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_digest_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_sha256();
     test_sha512();
     test_md5();

@@ -63,7 +63,14 @@ void split_view() {
     die_unequal(i, 4u);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_string_view_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     construct_empty();
     assign_and_compare();
     split_view();

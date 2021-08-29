@@ -263,7 +263,7 @@ struct TestFactory_Map {
 
 // -----------------------------------------------------------------------------
 
-size_t repeat_until;
+static size_t repeat_until;
 
 //! Repeat (short) tests until enough time elapsed and divide by the repeat.
 template <typename TestClass>
@@ -382,7 +382,14 @@ void TestFactory_Map<TestClass>::call_testrunner(size_t items) {
 }
 
 //! Speed test them!
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_btree_speedtest_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     {   // Set - speed test only insertion
 
         repeat_until = min_items;

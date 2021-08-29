@@ -28,7 +28,7 @@
 const size_t min_items = 1024000;
 
 //! maximum number of items to sort
-const size_t max_items = 1024000l * 4096l;
+const size_t max_items = 1024000L * 4096L;
 
 //! minimum number of repeated sorts for each number of items
 const size_t min_reps = 4;
@@ -113,7 +113,14 @@ void run_speedtest(size_t items, const std::string& algoname) {
 }
 
 //! Speed test them!
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_sort_parallel_speedtest_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // speed tests for uint64_t
     for (size_t items = min_items; items <= max_items; items *= 2) {
         run_speedtest<uint64_t, run_tlx_radixsort_8>(items, "radixsort8 (uint64_t)");

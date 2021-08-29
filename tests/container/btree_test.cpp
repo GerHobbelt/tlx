@@ -1596,8 +1596,14 @@ void test_bulkload() {
 
 /******************************************************************************/
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_container_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_simple();
     if (tlx_more_tests) {
         test_large();

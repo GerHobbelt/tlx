@@ -39,7 +39,7 @@ void parallel_sample_sort_unroll_interleave(
 
 /******************************************************************************/
 
-void TestFrontend(const size_t num_strings, const size_t num_chars,
+static void TestFrontend(const size_t num_strings, const size_t num_chars,
                   const std::string& letters) {
 
     std::default_random_engine rng(seed);
@@ -140,14 +140,21 @@ void TestFrontend(const size_t num_strings, const size_t num_chars,
 
 /******************************************************************************/
 
-void test_all(const size_t num_strings) {
+static void test_all(const size_t num_strings) {
     run_tests(parallel_sample_sort);
     run_tests(parallel_sample_sort_unroll_interleave);
 
     TestFrontend(num_strings, 16, letters_alnum);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_sort_strings_parallel_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // self verify calculations
     perfect_tree_calculations_self_verify();
 

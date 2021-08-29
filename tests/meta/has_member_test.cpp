@@ -116,7 +116,14 @@ static_assert(
 
 /******************************************************************************/
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_has_member_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     return 0;
 }
 

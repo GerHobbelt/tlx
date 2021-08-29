@@ -341,7 +341,14 @@ static void test_sgn() {
     die_unequal(tlx::sgn(-42.0), -1);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_math_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_bswap();
     test_clz();
     test_ctz();

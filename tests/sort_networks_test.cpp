@@ -76,7 +76,14 @@ void test_networks(unsigned int size, unsigned method) {
     die_unless(std::is_sorted(v.cbegin(), v.cend()));
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_sort_networks_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // run multiway mergesort tests for 0..256 sequences
     for (unsigned int i = 0; i <= 16; ++i)
     {

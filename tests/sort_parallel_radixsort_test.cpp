@@ -72,8 +72,14 @@ void test_size(unsigned int size) {
     die_unless(std::is_sorted(v.cbegin(), v.cend(), cmp));
 }
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_sort_parallel_radixsort_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // run multiway mergesort tests for 0..256 sequences
     for (unsigned int i = 0; i < 256; ++i)
     {

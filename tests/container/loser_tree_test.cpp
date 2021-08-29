@@ -318,7 +318,14 @@ void benchmark_losertree(
               << std::endl;
 }
 
-int main(int argc, char* argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_loser_tree_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     tlx::CmdlineParser clp;
 
     size_t num_vectors = 10;

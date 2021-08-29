@@ -938,8 +938,14 @@ static void test_word_wrap() {
     die_unequal(tlx::word_wrap(long_line, 60), long_line_correct);
 }
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_string_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_appendline();
     test_base64();
     test_bitdump();

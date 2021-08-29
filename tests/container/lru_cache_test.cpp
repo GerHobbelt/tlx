@@ -196,8 +196,14 @@ static void test_map_keep_all_values_within_capacity() {
     die_unequal(0u, cache.size());
 }
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_lru_cache_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_set_simple_put();
     test_set_missing_value();
     test_set_keep_all_values_within_capacity();

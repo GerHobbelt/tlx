@@ -186,8 +186,14 @@ static void test_fold_right_tuple() {
 
 /******************************************************************************/
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_fold_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_fold_left();
     test_fold_left_tuple();
     test_fold_right();

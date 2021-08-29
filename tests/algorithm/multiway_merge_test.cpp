@@ -157,7 +157,7 @@ void test_vecs(unsigned int vecnum,
     die_unless(output == correct);
 }
 
-void test_all(const tlx::MultiwayMergeAlgorithm& mwma) {
+static void test_all(const tlx::MultiwayMergeAlgorithm& mwma) {
     // run multiway merge tests for 0..256 sequences
     for (unsigned int n = 0; n <= 128; n += 1 + n / 16 + n / 32 + n / 64)
     {
@@ -193,7 +193,14 @@ void test_all(const tlx::MultiwayMergeAlgorithm& mwma) {
     }
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_multiway_merge_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_all(tlx::MWMA_BUBBLE);
     test_all(tlx::MWMA_LOSER_TREE);
     test_all(tlx::MWMA_LOSER_TREE_COMBINED);

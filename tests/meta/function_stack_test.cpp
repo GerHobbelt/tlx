@@ -123,7 +123,14 @@ static void test_stack_maker() {
     die_unequal(out.front(), "122");
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_function_stack_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_stack1();
     test_simple_deduction_test();
     test_stack_maker();

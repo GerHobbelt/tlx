@@ -45,7 +45,14 @@ void test_double() {
     die_unequal_eps6(0.039848491723996423, agg.standard_deviation(0));
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_aggregate_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_integer();
     test_double();
 

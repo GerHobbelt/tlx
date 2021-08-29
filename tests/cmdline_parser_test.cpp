@@ -14,7 +14,7 @@
 #include <tlx/cmdline_parser.hpp>
 #include <tlx/die.hpp>
 
-void test1() {
+static void test1() {
     int a_int = 0;
     std::string a_str;
 
@@ -41,7 +41,14 @@ void test1() {
     die_if(cp.process(5, cmdline2, os2));
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_cmdline_parser_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test1();
 
     return 0;

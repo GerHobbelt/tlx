@@ -63,7 +63,14 @@ void check_with_100elements(unsigned left_size, unsigned confidence,
         check_with_100elements(100 - left_size, confidence, prng);
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_random_bipartite_shuffle_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     std::mt19937_64 prng(1);
 
     // confidence intervals are selected that the error prob for each element is

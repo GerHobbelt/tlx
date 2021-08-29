@@ -20,7 +20,14 @@
 #include <fstream>
 #include <iostream>
 
-int main(int argc, char* argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_sort_strings_example_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     tlx::CmdlineParser cp;
 
     // add description

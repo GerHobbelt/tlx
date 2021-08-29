@@ -198,7 +198,14 @@ static void test_lambdas() {
     }
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_delegate_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_plain_functions();
     test_class_methods();
     test_functor_class();

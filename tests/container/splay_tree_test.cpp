@@ -35,7 +35,7 @@ struct MyStructCompare {
 template class tlx::SplayTree<size_t>;
 template class tlx::SplayTree<MyStruct, MyStructCompare>;
 
-void compare(const tlx::SplayTree<size_t>& tree,
+static void compare(const tlx::SplayTree<size_t>& tree,
              const std::set<size_t>& check) {
     die_unless(tree.check());
 
@@ -47,7 +47,7 @@ void compare(const tlx::SplayTree<size_t>& tree,
     die_unless(check_vec == preorder);
 }
 
-void test1() {
+static void test1() {
 
     using Tree = tlx::SplayTree<size_t>;
 
@@ -88,7 +88,7 @@ void test1() {
     }
 }
 
-void test2_random() {
+static void test2_random() {
 
     tlx::SplayTree<size_t> tree;
     std::deque<size_t> check;
@@ -122,7 +122,7 @@ void test2_random() {
     }
 }
 
-void test3_empty() {
+static void test3_empty() {
 
     tlx::SplayTree<size_t> tree;
 
@@ -132,7 +132,14 @@ void test3_empty() {
     }
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_splay_tree_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test1();
     test2_random();
     test3_empty();

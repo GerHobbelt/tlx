@@ -69,7 +69,14 @@ static void test_string_vector_deque() {
     }
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_stack_allocator_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_string_vector_deque();
 
     return 0;

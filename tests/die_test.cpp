@@ -13,8 +13,14 @@
 #include <cmath>
 #include <iomanip>
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_die_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // test some double comparisons
     die_unless(tlx::die_equal_compare(NAN, NAN));
     die_unless(!tlx::die_equal_compare(NAN, 0));

@@ -668,7 +668,14 @@ void test_main_radix_heap_pair(std::mt19937& prng) {
 
 /******************************************************************************/
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_radix_heap_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     std::mt19937 prng(1);
 
     test_main_bitarray(prng);

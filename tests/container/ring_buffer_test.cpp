@@ -119,7 +119,14 @@ template class RingBuffer<MyStruct>;
 
 } // namespace tlx
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_ring_buffer_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_fill_circular(12);
     test_fill_circular(16);
     test_fill_circular(20);

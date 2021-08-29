@@ -271,7 +271,14 @@ void d_ary_heap_test_update(size_t size, std::vector<double>& prio,
     prio = backup;
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_d_ary_heap_test_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     // Size of the tested heaps and random seed.
     size_t size = 100;
     uint32_t r_seed = 42;

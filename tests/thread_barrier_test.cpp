@@ -77,7 +77,14 @@ static void TestWaitFor(int count, int slowThread = -1) {
     }
 }
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_thread_barrier_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     int count = 8;
 
     // run with 8 threads, one slow one

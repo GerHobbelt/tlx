@@ -110,8 +110,14 @@ static void test_call_for_range() {
 
 /******************************************************************************/
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_call_for_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_call_for_range();
     test_call_foreach();
     test_call_foreach_with_index();

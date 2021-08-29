@@ -33,8 +33,14 @@ struct MyUnprintable {
     int a = 42;
 };
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_logger_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     check("42 - abc\n",
           []() {
               LOG1 << 42 << " - abc";

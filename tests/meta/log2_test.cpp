@@ -126,7 +126,14 @@ static void test_log2() {
 
 /******************************************************************************/
 
-int main() {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_log2_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_log2();
     return 0;
 }

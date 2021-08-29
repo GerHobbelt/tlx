@@ -399,7 +399,14 @@ void test_seqsize(const size_t seq_num = 64) {
         test_repeat<ValueType, Method>(seq_num, b);
 }
 
-int main(int argc, char* argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_multiway_merge_benchmark_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     std::string benchset;
 
     tlx::CmdlineParser cp;

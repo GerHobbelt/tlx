@@ -99,8 +99,14 @@ static void exclusive_scan() {
     }
 }
 
-int main() {
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      tlx_btree_test_algorithm_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     test_merge_combine();
     exclusive_scan();
 
