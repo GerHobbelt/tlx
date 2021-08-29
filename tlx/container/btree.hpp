@@ -303,7 +303,7 @@ private:
     //! Extended structure of a leaf node in memory. Contains pairs of keys and
     //! data items. Key and data slots are kept together in value_type.
     struct LeafNode : public node {
-        //! Define an related allocator for the LeafNode structs.
+        //! Define a related allocator for the LeafNode structs.
         typedef typename Allocator::template rebind<LeafNode>::other alloc_type;
 
         //! Double linked list pointers to traverse the leaves

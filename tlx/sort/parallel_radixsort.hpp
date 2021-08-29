@@ -580,17 +580,15 @@ void radix_sort_params(Iterator begin, Iterator end, size_t max_depth)
     ctx.rest_size = ctx.totalsize;
 
     // allocate shadow pointer array
-    Type *shadow = new Type[ctx.totalsize];
-    Iterator shadow_begin = Iterator(shadow);
+	std::vector<Type> shadow(ctx.totalsize);
+	//shadow.resize(ctx.totalsize);
 
     ctx.enqueue(ShadowDataPtr<DummyDataSet<Iterator>>(begin, end,
-                shadow_begin, shadow_begin + ctx.totalsize), 0);
+		shadow.begin(), shadow.end()), 0);
 
     ctx.threads_.loop_until_empty();
 
     assert(!ctx.enable_rest_size || ctx.rest_size == 0);
-
-    delete[] shadow;
 }
 
 /*!
