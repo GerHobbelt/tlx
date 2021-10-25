@@ -283,7 +283,7 @@ private:
     struct InnerNodeImpl: public InnerNodeBase {
         //! Define an related allocator for the InnerNodeImpl structs.
         typedef InnerNodeImpl<RankType> Self;
-        typedef typename Allocator::template rebind<Self>::other alloc_type;
+        typedef typename std::allocator_traits<Allocator>::template rebind_alloc<Self> alloc_type;
     };
 
     //! The inner node a ranked B+ tree.
@@ -304,7 +304,7 @@ private:
     //! data items. Key and data slots are kept together in value_type.
     struct LeafNode : public node {
         //! Define a related allocator for the LeafNode structs.
-        typedef typename Allocator::template rebind<LeafNode>::other alloc_type;
+        typedef typename std::allocator_traits<Allocator>::template rebind_alloc<LeafNode> alloc_type;
 
         //! Double linked list pointers to traverse the leaves
         LeafNode* prev_leaf;
@@ -1303,15 +1303,15 @@ private:
         if (n->is_leafnode()) {
             LeafNode* ln = static_cast<LeafNode*>(n);
             typename LeafNode::alloc_type a(leaf_node_allocator());
-            a.destroy(ln);
-            a.deallocate(ln, 1);
+            std::allocator_traits<typename LeafNode::alloc_type>::destroy(a, ln);
+            std::allocator_traits<typename LeafNode::alloc_type>::deallocate(a, ln, 1);
             stats_.leaves--;
         }
         else {
             InnerNode* in = static_cast<InnerNode*>(n);
             typename InnerNode::alloc_type a(inner_node_allocator());
-            a.destroy(in);
-            a.deallocate(in, 1);
+            std::allocator_traits<typename InnerNode::alloc_type>::destroy(a, in);
+            std::allocator_traits<typename InnerNode::alloc_type>::deallocate(a, in, 1);
             stats_.inner_nodes--;
         }
     }
