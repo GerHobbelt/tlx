@@ -28,7 +28,7 @@
 const size_t min_items = 1024000;
 
 //! maximum number of items to sort
-const size_t max_items = 1024000L * 4096L;
+const size_t max_items = (size_t)1024000L * (size_t)4096L;
 
 //! minimum number of repeated sorts for each number of items
 const size_t min_reps = 4;
