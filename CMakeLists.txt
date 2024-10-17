@@ -394,7 +394,7 @@ if(TLX_TRY_COMPILE_HEADERS)
 
     file(WRITE ${source_name}
       "#include <${header_file}>
-       int main() { return 0; }")
+       int main(void) { return 0; }")
 
     add_executable(${target_name} ${source_name})
     target_link_libraries(${target_name} ${TLX_LIBRARIES})
