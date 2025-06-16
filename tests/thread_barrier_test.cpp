@@ -41,7 +41,7 @@ static void TestWaitFor(int count, int slowThread = -1) {
             [maxWaitTime, count, slowThread, &barrier, &flags, t] {
                 for (size_t r = 0; r < 100; ++r) {
                     std::minstd_rand0 rng(t + r);
-                    rng();
+                    (void)rng();
 
                     if (slowThread == -1) {
                         std::this_thread::sleep_for(
