@@ -11,6 +11,7 @@
 #ifndef TLX_META_IS_STD_PAIR_HEADER
 #define TLX_META_IS_STD_PAIR_HEADER
 
+#include <type_traits>
 #include <utility>
 
 namespace tlx {
@@ -20,10 +21,14 @@ namespace tlx {
 
 //! test if is a std::pair<...>
 template <typename T>
-struct is_std_pair : public std::false_type { };
+struct is_std_pair : public std::false_type
+{
+};
 
 template <typename S, typename T>
-struct is_std_pair<std::pair<S, T> >: public std::true_type { };
+struct is_std_pair<std::pair<S, T> > : public std::true_type
+{
+};
 
 //! \}
 

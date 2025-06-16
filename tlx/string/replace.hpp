@@ -3,7 +3,7 @@
  *
  * Part of tlx - http://panthema.net/tlx
  *
- * Copyright (C) 2007-2017 Timo Bingmann <tb@panthema.net>
+ * Copyright (C) 2007-2024 Timo Bingmann <tb@panthema.net>
  *
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
@@ -11,6 +11,7 @@
 #ifndef TLX_STRING_REPLACE_HEADER
 #define TLX_STRING_REPLACE_HEADER
 
+#include <tlx/container/string_view.hpp>
 #include <string>
 
 namespace tlx {
@@ -33,47 +34,8 @@ namespace tlx {
  * \param instead       replace needle with instead
  * \return              reference to str
  */
-std::string& replace_first(
-    std::string* str, const std::string& needle, const std::string& instead);
-
-/*!
- * Replace only the first occurrence of needle in str. The needle will be
- * replaced with instead, if found. The replacement is done in the given string
- * and a reference to the same is returned.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              reference to str
- */
-std::string& replace_first(
-    std::string* str, const std::string& needle, const char* instead);
-
-/*!
- * Replace only the first occurrence of needle in str. The needle will be
- * replaced with instead, if found. The replacement is done in the given string
- * and a reference to the same is returned.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              reference to str
- */
-std::string& replace_first(
-    std::string* str, const char* needle, const std::string& instead);
-
-/*!
- * Replace only the first occurrence of needle in str. The needle will be
- * replaced with instead, if found. The replacement is done in the given string
- * and a reference to the same is returned.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              reference to str
- */
-std::string& replace_first(
-    std::string* str, const char* needle, const char* instead);
+std::string& replace_first(std::string* str, tlx::string_view needle,
+                           tlx::string_view instead);
 
 /*!
  * Replace only the first occurrence of needle in str. The needle will be
@@ -100,48 +62,8 @@ std::string& replace_first(std::string* str, char needle, char instead);
  * \param instead       replace needle with instead
  * \return              copy of string possibly with replacement
  */
-std::string replace_first(
-    const std::string& str,
-    const std::string& needle, const std::string& instead);
-
-/*!
- * Replace only the first occurrence of needle in str. The needle will be
- * replaced with instead, if found. Returns a copy of the string with the
- * possible replacement.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              copy of string possibly with replacement
- */
-std::string replace_first(
-    const std::string& str, const std::string& needle, const char* instead);
-
-/*!
- * Replace only the first occurrence of needle in str. The needle will be
- * replaced with instead, if found. Returns a copy of the string with the
- * possible replacement.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              copy of string possibly with replacement
- */
-std::string replace_first(
-    const std::string& str, const char* needle, const std::string& instead);
-
-/*!
- * Replace only the first occurrence of needle in str. The needle will be
- * replaced with instead, if found. Returns a copy of the string with the
- * possible replacement.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              copy of string possibly with replacement
- */
-std::string replace_first(
-    const std::string& str, const char* needle, const char* instead);
+std::string replace_first(tlx::string_view str, tlx::string_view needle,
+                          tlx::string_view instead);
 
 /*!
  * Replace only the first occurrence of needle in str. The needle will be
@@ -153,7 +75,7 @@ std::string replace_first(
  * \param instead       replace needle with instead
  * \return              copy of string possibly with replacement
  */
-std::string replace_first(const std::string& str, char needle, char instead);
+std::string replace_first(tlx::string_view str, char needle, char instead);
 
 /******************************************************************************/
 // replace_all() in-place
@@ -168,47 +90,8 @@ std::string replace_first(const std::string& str, char needle, char instead);
  * \param instead       replace needle with instead
  * \return              reference to str
  */
-std::string& replace_all(
-    std::string* str, const std::string& needle, const std::string& instead);
-
-/*!
- * Replace all occurrences of needle in str. Each needle will be replaced with
- * instead, if found. The replacement is done in the given string and a
- * reference to the same is returned.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              reference to str
- */
-std::string& replace_all(
-    std::string* str, const std::string& needle, const char* instead);
-
-/*!
- * Replace all occurrences of needle in str. Each needle will be replaced with
- * instead, if found. The replacement is done in the given string and a
- * reference to the same is returned.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              reference to str
- */
-std::string& replace_all(
-    std::string* str, const char* needle, const std::string& instead);
-
-/*!
- * Replace all occurrences of needle in str. Each needle will be replaced with
- * instead, if found. The replacement is done in the given string and a
- * reference to the same is returned.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              reference to str
- */
-std::string& replace_all(
-    std::string* str, const char* needle, const char* instead);
+std::string& replace_all(std::string* str, tlx::string_view needle,
+                         tlx::string_view instead);
 
 /*!
  * Replace all occurrences of needle in str. Each needle will be replaced with
@@ -234,45 +117,8 @@ std::string& replace_all(std::string* str, char needle, char instead);
  * \param instead       replace needle with instead
  * \return              copy of string possibly with replacements
  */
-std::string replace_all(
-    const std::string& str,
-    const std::string& needle, const std::string& instead);
-
-/*!
- * Replace all occurrences of needle in str. Each needle will be replaced with
- * instead, if found. Returns a copy of the string with possible replacements.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              copy of string possibly with replacements
- */
-std::string replace_all(
-    const std::string& str, const std::string& needle, const char* instead);
-
-/*!
- * Replace all occurrences of needle in str. Each needle will be replaced with
- * instead, if found. Returns a copy of the string with possible replacements.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              copy of string possibly with replacements
- */
-std::string replace_all(
-    const std::string& str, const char* needle, const std::string& instead);
-
-/*!
- * Replace all occurrences of needle in str. Each needle will be replaced with
- * instead, if found. Returns a copy of the string with possible replacements.
- *
- * \param str           the string to process
- * \param needle        string to search for in str
- * \param instead       replace needle with instead
- * \return              copy of string possibly with replacements
- */
-std::string replace_all(
-    const std::string& str, const char* needle, const char* instead);
+std::string replace_all(tlx::string_view str, tlx::string_view needle,
+                        tlx::string_view instead);
 
 /*!
  * Replace all occurrences of needle in str. Each needle will be replaced with
@@ -283,7 +129,7 @@ std::string replace_all(
  * \param instead       replace needle with instead
  * \return              copy of string possibly with replacements
  */
-std::string replace_all(const std::string& str, char needle, char instead);
+std::string replace_all(tlx::string_view str, char needle, char instead);
 
 //! \}
 //! \}

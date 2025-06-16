@@ -13,6 +13,8 @@
 #ifndef TLX_LOGGER_CORE_HEADER
 #define TLX_LOGGER_CORE_HEADER
 
+#include <tlx/container/string_view.hpp>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -87,7 +89,8 @@ public:
 
     //! output any type, including io manipulators
     template <typename AnyType>
-    Logger& operator << (const AnyType& at) {
+    Logger& operator<<(const AnyType& at)
+    {
         LoggerFormatter<AnyType>::print(oss_, at);
         return *this;
     }
@@ -115,9 +118,12 @@ public:
 
     //! output any type, including io manipulators
     template <typename AnyType>
-    SpacingLogger& operator << (const AnyType& at) {
-        if (!first_) oss_ << ' ';
-        else first_ = false;
+    SpacingLogger& operator<<(const AnyType& at)
+    {
+        if (!first_)
+            oss_ << ' ';
+        else
+            first_ = false;
         LoggerFormatter<AnyType>::print(oss_, at);
         return *this;
     }
@@ -129,13 +135,18 @@ public:
 class LoggerVoidify
 {
 public:
-    void operator & (Logger&) { }
-    void operator & (SpacingLogger&) { }
+    void operator&(Logger&)
+    {
+    }
+
+    void operator&(SpacingLogger&)
+    {
+    }
 };
 
 //! Explicitly specify the condition for logging
-#define TLX_LOGC(cond) \
-    !(cond) ? (void)0 : ::tlx::LoggerVoidify()& ::tlx::Logger()
+#define TLX_LOGC(cond)                                                         \
+    !(cond) ? (void) 0 : ::tlx::LoggerVoidify() & ::tlx::Logger()
 
 //! Default logging method: output if the local debug variable is true.
 #define TLX_LOG TLX_LOGC(debug)
@@ -145,8 +156,8 @@ public:
 #define TLX_LOG1 TLX_LOGC(true)
 
 //! Explicitly specify the condition for logging
-#define TLX_sLOGC(cond) \
-    !(cond) ? (void)0 : ::tlx::LoggerVoidify() & ::tlx::SpacingLogger()
+#define TLX_sLOGC(cond)                                                        \
+    !(cond) ? (void) 0 : ::tlx::LoggerVoidify() & ::tlx::SpacingLogger()
 
 //! Default logging method: output if the local debug variable is true.
 #define TLX_sLOG TLX_sLOGC(debug)
@@ -171,7 +182,7 @@ public:
 
 //! Set new LoggerPrefixHook instance to prefix global log lines. Returns the
 //! old hook.
-LoggerPrefixHook * set_logger_prefix_hook(LoggerPrefixHook* hook);
+LoggerPrefixHook* set_logger_prefix_hook(LoggerPrefixHook* hook);
 
 /******************************************************************************/
 // Hook to collect logger output
@@ -184,16 +195,16 @@ public:
     virtual ~LoggerOutputHook();
 
     //! method the receive log lines
-    virtual void append_log_line(const std::string& line) = 0;
+    virtual void append_log_line(tlx::string_view line) = 0;
 };
 
 //! set new LoggerOutputHook instance to receive global log lines. returns the
 //! old hook.
-LoggerOutputHook * set_logger_output_hook(LoggerOutputHook* hook);
+LoggerOutputHook* set_logger_output_hook(LoggerOutputHook* hook);
 
 //! install default logger to cerr / stderr instead of stdout. returns the old
 //! hook.
-LoggerOutputHook * set_logger_to_stderr();
+LoggerOutputHook* set_logger_to_stderr();
 
 /*----------------------------------------------------------------------------*/
 
@@ -211,9 +222,9 @@ public:
     void clear();
 
     //! method the receive log lines
-    void append_log_line(const std::string& line) final;
+    void append_log_line(tlx::string_view line) final;
 
-protected:
+private:
     //! previous logger, will be restored by destructor
     LoggerOutputHook* next_;
 
@@ -231,7 +242,8 @@ template <typename AnyType>
 class LoggerFormatter<AnyType>
 {
 public:
-    static void print(std::ostream& os, const AnyType& t) {
+    static void print(std::ostream& os, const AnyType& t)
+    {
         os << t;
     }
 };
@@ -240,7 +252,8 @@ template <typename A, typename B>
 class LoggerFormatter<std::pair<A, B> >
 {
 public:
-    static void print(std::ostream& os, const std::pair<A, B>& p) {
+    static void print(std::ostream& os, const std::pair<A, B>& p)
+    {
         os << '(';
         LoggerFormatter<A>::print(os, p.first);
         os << ',';
@@ -253,12 +266,14 @@ template <typename T, class A>
 class LoggerFormatter<std::vector<T, A> >
 {
 public:
-    static void print(std::ostream& os, const std::vector<T, A>& data) {
+    static void print(std::ostream& os, const std::vector<T, A>& data)
+    {
         os << '[';
         for (typename std::vector<T>::const_iterator it = data.begin();
              it != data.end(); ++it)
         {
-            if (it != data.begin()) os << ',';
+            if (it != data.begin())
+                os << ',';
             LoggerFormatter<T>::print(os, *it);
         }
         os << ']';

@@ -32,14 +32,18 @@ template <typename Comparator>
 class CS_IfSwap
 {
 public:
-    CS_IfSwap(Comparator cmp) : cmp_(cmp) { }
-
-    template <typename Type>
-    inline void operator () (Type& left, Type& right) {
-        if (cmp_(right, left)) { std::swap(left, right); }
+    CS_IfSwap(Comparator cmp) : cmp_(cmp)
+    {
     }
 
-protected:
+    template <typename Type>
+    void operator()(Type& left, Type& right)
+    {
+        if (cmp_(right, left))
+            std::swap(left, right);
+    }
+
+private:
     Comparator cmp_;
 };
 

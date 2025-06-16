@@ -10,11 +10,19 @@
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
-#include "sort_strings_test.hpp"
-
-#include <tlx/sort/strings_parallel.hpp>
-
+#include <tlx/container/simple_vector.hpp>
+#include <tlx/container/string_view.hpp>
+#include <tlx/logger.hpp>
 #include <tlx/sort/strings/parallel_sample_sort.hpp>
+#include <tlx/sort/strings/sample_sort_tools.hpp>
+#include <tlx/sort/strings_parallel.hpp>
+#include <tlx/timestamp.hpp>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <random>
+#include "sort_strings_test.hpp"
 
 /******************************************************************************/
 // More PS5 Parameter Instantiations
@@ -31,8 +39,9 @@ public:
 };
 
 template <typename StringPtr>
-void parallel_sample_sort_unroll_interleave(
-    const StringPtr& strptr, size_t depth, size_t memory) {
+void parallel_sample_sort_unroll_interleave(const StringPtr& strptr,
+                                            size_t depth, size_t memory)
+{
     return parallel_sample_sort_params<PS5ParametersTreeUnrollInterleave>(
         strptr, depth, memory);
 }
@@ -40,12 +49,11 @@ void parallel_sample_sort_unroll_interleave(
 /******************************************************************************/
 
 static void TestFrontend(const size_t num_strings, const size_t num_chars,
-                  const std::string& letters) {
-
+                  tlx::string_view letters)
+{
     std::default_random_engine rng(seed);
 
-    LOG1 << "Running sort_strings() on " << num_strings
-         << " uint8_t* strings";
+    LOG1 << "Running sort_strings() on " << num_strings << " uint8_t* strings";
 
     // array of string pointers
     tlx::simple_vector<std::uint8_t*> cstrings(num_strings);
@@ -71,10 +79,10 @@ static void TestFrontend(const size_t num_strings, const size_t num_chars,
 
         // check result
         if (!UCharStringSet(cstrings.data(), cstrings.data() + num_strings)
-            .check_order())
+                 .check_order())
         {
             LOG1 << "Result is not sorted!";
-            abort();
+            std::abort();
         }
     }
 
@@ -96,10 +104,10 @@ static void TestFrontend(const size_t num_strings, const size_t num_chars,
 
         // check result
         if (!CUCharStringSet(ccstrings.data(), ccstrings.data() + num_strings)
-            .check_order())
+                 .check_order())
         {
             LOG1 << "Result is not sorted!";
-            abort();
+            std::abort();
         }
     }
 
@@ -114,8 +122,8 @@ static void TestFrontend(const size_t num_strings, const size_t num_chars,
 
         tlx::simple_vector<std::uint32_t> lcp(num_strings);
 
-        tlx::sort_strings_parallel_lcp(
-            ccstrings.data(), num_strings, lcp.data());
+        tlx::sort_strings_parallel_lcp(ccstrings.data(), num_strings,
+                                       lcp.data());
 
         double ts2 = tlx::timestamp();
         LOG1 << "sorting took " << ts2 - ts1 << " seconds";
@@ -125,11 +133,12 @@ static void TestFrontend(const size_t num_strings, const size_t num_chars,
         if (!ss.check_order())
         {
             LOG1 << "Result is not sorted!";
-            abort();
+            std::abort();
         }
-        if (!check_lcp(ss, lcp.data())) {
+        if (!check_lcp(ss, lcp.data()))
+        {
             LOG1 << "LCP result is not correct!";
-            abort();
+            std::abort();
         }
     }
 
@@ -162,7 +171,8 @@ int main(int argc, const char** argv)
     test_all(16);
     test_all(256);
     test_all(65550);
-    if (tlx_more_tests) {
+    if (tlx_more_tests)
+    {
         test_all(1024 * 1024);
         test_all(16 * 1024 * 1024);
     }

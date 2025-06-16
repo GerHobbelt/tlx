@@ -8,11 +8,10 @@
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
-#include <sstream>
-#include <string>
-
 #include <tlx/cmdline_parser.hpp>
 #include <tlx/die.hpp>
+#include <sstream>
+#include <string>
 
 static void test1() {
     int a_int = 0;
@@ -26,7 +25,7 @@ static void test1() {
     cp.set_author("Timo Bingmann <tb@panthema.net>");
 
     // good command line
-    const char* cmdline1[] = { "test", "-i", "42", "-f", "somefile", nullptr };
+    const char* cmdline1[] = {"test", "-i", "42", "-f", "somefile", nullptr};
 
     std::ostringstream os1;
     die_unless(cp.process(5, cmdline1, os1));
@@ -35,7 +34,7 @@ static void test1() {
     die_unequal(a_str, "somefile");
 
     // bad command line
-    const char* cmdline2[] = { "test", "-i", "dd", "-f", "somefile", nullptr };
+    const char* cmdline2[] = {"test", "-i", "dd", "-f", "somefile", nullptr};
 
     std::ostringstream os2;
     die_if(cp.process(5, cmdline2, os2));

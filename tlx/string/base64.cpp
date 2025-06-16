@@ -3,15 +3,17 @@
  *
  * Part of tlx - http://panthema.net/tlx
  *
- * Copyright (C) 2007-2017 Timo Bingmann <tb@panthema.net>
+ * Copyright (C) 2007-2024 Timo Bingmann <tb@panthema.net>
  *
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
+#include <tlx/container/string_view.hpp>
 #include <tlx/string/base64.hpp>
-
+#include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <string>
 
 namespace tlx {
 
@@ -23,16 +25,19 @@ namespace tlx {
 /******************************************************************************/
 // Base64 Encoding and Decoding
 
-std::string base64_encode(const void* data, size_t size, size_t line_break) {
+std::string base64_encode(const void* data, size_t size, size_t line_break)
+{
     const std::uint8_t* in = reinterpret_cast<const std::uint8_t*>(data);
     const std::uint8_t* in_end = in + size;
     std::string out;
 
-    if (size == 0) return out;
+    if (size == 0)
+        return out;
 
     // calculate output string's size in advance
     size_t outsize = (((size - 1) / 3) + 1) * 4;
-    if (line_break > 0) outsize += outsize / line_break;
+    if (line_break > 0)
+        outsize += outsize / line_break;
     out.reserve(outsize);
 
     static const char encoding64[64] = {
@@ -40,8 +45,7 @@ std::string base64_encode(const void* data, size_t size, size_t line_break) {
         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
         'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
-    };
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
     std::uint8_t result = 0;
     size_t line_begin = 0;
@@ -49,7 +53,8 @@ std::string base64_encode(const void* data, size_t size, size_t line_break) {
     while (true)
     {
         // step 0: if the string is finished here, no padding is needed
-        if (in == in_end) {
+        if (in == in_end)
+        {
             return out;
         }
 
@@ -60,7 +65,8 @@ std::string base64_encode(const void* data, size_t size, size_t line_break) {
         result = static_cast<std::uint8_t>((fragment & 0x03) << 4);
 
         // step 1: if string finished here, add two padding '='s
-        if (in == in_end) {
+        if (in == in_end)
+        {
             out += encoding64[result];
             out += '=';
             out += '=';
@@ -75,7 +81,8 @@ std::string base64_encode(const void* data, size_t size, size_t line_break) {
         result = static_cast<std::uint8_t>((fragment & 0x0F) << 2);
 
         // step 2: if string finished here, add one padding '='
-        if (in == in_end) {
+        if (in == in_end)
+        {
             out += encoding64[result];
             out += '=';
             return out;
@@ -100,13 +107,15 @@ std::string base64_encode(const void* data, size_t size, size_t line_break) {
     }
 }
 
-std::string base64_encode(const std::string& str, size_t line_break) {
+std::string base64_encode(tlx::string_view str, size_t line_break)
+{
     return base64_encode(str.data(), str.size(), line_break);
 }
 
 /******************************************************************************/
 
-std::string base64_decode(const void* data, size_t size, bool strict) {
+std::string base64_decode(const void* data, size_t size, bool strict)
+{
     const std::uint8_t* in = reinterpret_cast<const std::uint8_t*>(data);
     const std::uint8_t* in_end = in + size;
     std::string out;
@@ -145,8 +154,10 @@ std::string base64_decode(const void* data, size_t size, bool strict) {
     while (true)
     {
         // step 0: save first valid letter. do not output a byte, yet.
-        do {
-            if (in == in_end) return out;
+        do
+        {
+            if (in == in_end)
+                return out;
 
             fragment = decoding64[*in++];
 
@@ -157,8 +168,10 @@ std::string base64_decode(const void* data, size_t size, bool strict) {
         outchar = static_cast<std::uint8_t>((fragment & 0x3F) << 2);
 
         // step 1: get second valid letter. output the first byte.
-        do {
-            if (in == in_end) return out;
+        do
+        {
+            if (in == in_end)
+                return out;
 
             fragment = decoding64[*in++];
 
@@ -172,8 +185,10 @@ std::string base64_decode(const void* data, size_t size, bool strict) {
         outchar = static_cast<std::uint8_t>((fragment & 0x0F) << 4);
 
         // step 2: get third valid letter. output the second byte.
-        do {
-            if (in == in_end) return out;
+        do
+        {
+            if (in == in_end)
+                return out;
 
             fragment = decoding64[*in++];
 
@@ -187,8 +202,10 @@ std::string base64_decode(const void* data, size_t size, bool strict) {
         outchar = static_cast<std::uint8_t>((fragment & 0x03) << 6);
 
         // step 3: get fourth valid letter. output the third byte.
-        do {
-            if (in == in_end) return out;
+        do
+        {
+            if (in == in_end)
+                return out;
 
             fragment = decoding64[*in++];
 
@@ -201,7 +218,8 @@ std::string base64_decode(const void* data, size_t size, bool strict) {
     }
 }
 
-std::string base64_decode(const std::string& str, bool strict) {
+std::string base64_decode(tlx::string_view str, bool strict)
+{
     return base64_decode(str.data(), str.size(), strict);
 }
 

@@ -13,7 +13,9 @@
 
 #include <tlx/meta/fold_left.hpp>
 #include <tlx/meta/index_sequence.hpp>
+#include <cstddef>
 #include <tuple>
+#include <type_traits>
 
 namespace tlx {
 
@@ -29,10 +31,10 @@ namespace meta_detail {
 //! helper for fold_left_tuple: forwards tuple entries
 template <typename Reduce, typename Initial, typename Tuple, std::size_t... Is>
 auto fold_left_tuple_impl(Reduce&& r, Initial&& init, Tuple&& t,
-                          index_sequence<Is...>) {
-    return fold_left(
-        std::forward<Reduce>(r), std::forward<Initial>(init),
-        std::get<Is>(std::forward<Tuple>(t)) ...);
+                          index_sequence<Is...>)
+{
+    return fold_left(std::forward<Reduce>(r), std::forward<Initial>(init),
+                     std::get<Is>(std::forward<Tuple>(t))...);
 }
 
 } // namespace meta_detail
@@ -40,12 +42,13 @@ auto fold_left_tuple_impl(Reduce&& r, Initial&& init, Tuple&& t,
 //! Implements fold_left() -- ((a * b) * c) -- with a binary Reduce operation
 //! and initial value on a tuple.
 template <typename Reduce, typename Initial, typename Tuple>
-auto fold_left_tuple(Reduce&& r, Initial&& init, Tuple&& t) {
+auto fold_left_tuple(Reduce&& r, Initial&& init, Tuple&& t)
+{
     using Indices = make_index_sequence<
         std::tuple_size<typename std::decay<Tuple>::type>::value>;
-    return meta_detail::fold_left_tuple_impl(
-        std::forward<Reduce>(r), std::forward<Initial>(init),
-        std::forward<Tuple>(t), Indices());
+    return meta_detail::fold_left_tuple_impl(std::forward<Reduce>(r),
+                                             std::forward<Initial>(init),
+                                             std::forward<Tuple>(t), Indices());
 }
 
 //! \}

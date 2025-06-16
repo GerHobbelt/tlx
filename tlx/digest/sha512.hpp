@@ -6,7 +6,7 @@
  *
  * Part of tlx - http://panthema.net/tlx
  *
- * Copyright (C) 2018 Timo Bingmann <tb@panthema.net>
+ * Copyright (C) 2018-2024 Timo Bingmann <tb@panthema.net>
  *
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
@@ -14,6 +14,8 @@
 #ifndef TLX_DIGEST_SHA512_HEADER
 #define TLX_DIGEST_SHA512_HEADER
 
+#include <tlx/container/string_view.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -33,12 +35,12 @@ public:
     //! construct context and process data range
     SHA512(const void* data, std::uint32_t size);
     //! construct context and process string
-    explicit SHA512(const std::string& str);
+    explicit SHA512(tlx::string_view str);
 
     //! process more data
     void process(const void* data, std::uint32_t size);
     //! process more data
-    void process(const std::string& str);
+    void process(tlx::string_view str);
 
     //! digest length in bytes
     static constexpr size_t kDigestLength = 64;
@@ -54,21 +56,21 @@ public:
     std::string digest_hex_uc();
 
 private:
-    std::uint64_t length_;
+    std::uint64_t length_ = 0;
     std::uint64_t state_[8];
-    std::uint32_t curlen_;
+    std::uint32_t curlen_ = 0;
     std::uint8_t buf_[128];
 };
 
 //! process data and return 64 byte (512 bit) digest hex encoded
 std::string sha512_hex(const void* data, std::uint32_t size);
 //! process data and return 64 byte (512 bit) digest hex encoded
-std::string sha512_hex(const std::string& str);
+std::string sha512_hex(tlx::string_view str);
 
 //! process data and return 64 byte (512 bit) digest upper-case hex encoded
 std::string sha512_hex_uc(const void* data, std::uint32_t size);
 //! process data and return 64 byte (512 bit) digest upper-case hex encoded
-std::string sha512_hex_uc(const std::string& str);
+std::string sha512_hex_uc(tlx::string_view str);
 
 //! \}
 

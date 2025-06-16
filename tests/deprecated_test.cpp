@@ -8,14 +8,17 @@
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
-#include <iostream>
 #include <tlx/define/deprecated.hpp>
+#include <iostream>
 
 TLX_DEPRECATED(void do_not_use_me_anymore());
-void do_not_use_me_anymore() {
+
+void do_not_use_me_anymore()
+{
 }
 
-TLX_DEPRECATED_FUNC_DEF(int also_do_not_use()) {
+TLX_DEPRECATED_FUNC_DEF(int also_do_not_use())
+{
     return 0;
 }
 
@@ -31,8 +34,7 @@ int main(int argc, const char** argv)
     also_do_not_use();
 
     std::cout << "This test takes place during compilation.\n"
-              << "Nothing to see here, move on!"
-              << std::endl;
+              << "Nothing to see here, move on!\n";
     return 0;
 }
 

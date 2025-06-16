@@ -43,11 +43,11 @@ public:
     //! default copy-constructor
     MultiTimer(const MultiTimer&);
     //! default assignment operator
-    MultiTimer& operator = (const MultiTimer&);
+    MultiTimer& operator=(const MultiTimer&);
     //! move-constructor: default
-    MultiTimer(MultiTimer&&);
+    MultiTimer(MultiTimer&&) noexcept;
     //! move-assignment operator: default
-    MultiTimer& operator = (MultiTimer&&);
+    MultiTimer& operator=(MultiTimer&&) noexcept;
 
     //! destructor
     ~MultiTimer();
@@ -62,7 +62,7 @@ public:
     void reset();
 
     //! return name of currently running timer.
-    const char * running() const;
+    const char* running() const;
 
     //! return timer duration in seconds of timer.
     double get(const char* timer);
@@ -80,7 +80,7 @@ public:
 
     //! add all timers from another, internally holds a global mutex lock,
     //! because this is used to add thread values
-    MultiTimer& operator += (const MultiTimer& b);
+    MultiTimer& operator+=(const MultiTimer& b);
 
 private:
     //! timer entry
@@ -93,9 +93,9 @@ private:
     std::chrono::duration<double> total_duration_;
 
     //! currently running timer name
-    const char* running_;
+    const char* running_ = nullptr;
     //! hash of running_
-    std::uint32_t running_hash_;
+    std::uint32_t running_hash_ = 0;
     //! start of currently running timer name
     std::chrono::time_point<std::chrono::high_resolution_clock> time_point_;
 
@@ -114,7 +114,7 @@ public:
     //! change back timer to previous timer.
     ~ScopedMultiTimerSwitch();
 
-protected:
+private:
     //! reference to MultiTimer
     MultiTimer& timer_;
 
@@ -133,7 +133,7 @@ public:
     //! change back timer to previous timer.
     ~ScopedMultiTimer();
 
-protected:
+private:
     //! reference to base timer
     MultiTimer& base_;
 

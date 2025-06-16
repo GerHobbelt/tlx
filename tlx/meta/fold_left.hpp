@@ -11,8 +11,7 @@
 #ifndef TLX_META_FOLD_LEFT_HEADER
 #define TLX_META_FOLD_LEFT_HEADER
 
-#include <tlx/meta/index_sequence.hpp>
-#include <tuple>
+#include <utility>
 
 namespace tlx {
 
@@ -27,20 +26,20 @@ namespace meta_detail {
 
 //! helper for fold_left(): base case
 template <typename Reduce, typename Initial, typename Arg>
-auto fold_left_impl(Reduce&& r, Initial&& init, Arg&& arg) {
-    return std::forward<Reduce>(r)(
-        std::forward<Initial>(init), std::forward<Arg>(arg));
+auto fold_left_impl(Reduce&& r, Initial&& init, Arg&& arg)
+{
+    return std::forward<Reduce>(r)(std::forward<Initial>(init),
+                                   std::forward<Arg>(arg));
 }
 
 //! helper for fold_left(): general recursive case
 template <typename Reduce, typename Initial, typename Arg, typename... MoreArgs>
-auto fold_left_impl(Reduce&& r, Initial&& init,
-                    Arg&& arg, MoreArgs&& ... rest) {
-    return fold_left_impl(
-        std::forward<Reduce>(r),
-        std::forward<Reduce>(r)(
-            std::forward<Initial>(init), std::forward<Arg>(arg)),
-        std::forward<MoreArgs>(rest) ...);
+auto fold_left_impl(Reduce&& r, Initial&& init, Arg&& arg, MoreArgs&&... rest)
+{
+    return fold_left_impl(std::forward<Reduce>(r),
+                          std::forward<Reduce>(r)(std::forward<Initial>(init),
+                                                  std::forward<Arg>(arg)),
+                          std::forward<MoreArgs>(rest)...);
 }
 
 } // namespace meta_detail
@@ -48,10 +47,11 @@ auto fold_left_impl(Reduce&& r, Initial&& init,
 //! Implements fold_left() -- ((a * b) * c) -- with a binary Reduce operation
 //! and initial value.
 template <typename Reduce, typename Initial, typename... Args>
-auto fold_left(Reduce&& r, Initial&& init, Args&& ... args) {
-    return meta_detail::fold_left_impl(
-        std::forward<Reduce>(r), std::forward<Initial>(init),
-        std::forward<Args>(args) ...);
+auto fold_left(Reduce&& r, Initial&& init, Args&&... args)
+{
+    return meta_detail::fold_left_impl(std::forward<Reduce>(r),
+                                       std::forward<Initial>(init),
+                                       std::forward<Args>(args)...);
 }
 
 //! \}

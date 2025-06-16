@@ -12,7 +12,7 @@
 #define TLX_STRING_SSPRINTF_HEADER
 
 #include <tlx/define/attribute_format_printf.hpp>
-
+#include <cstddef>
 #include <string>
 
 namespace tlx {
@@ -25,8 +25,7 @@ namespace tlx {
  *
  * \param fmt printf format and additional parameters
  */
-std::string ssprintf(const char* fmt, ...)
-TLX_ATTRIBUTE_FORMAT_PRINTF(1, 2);
+std::string ssprintf(const char* fmt, ...) TLX_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /*!
  * Helper for return the result of a snprintf() call inside a std::string.
@@ -35,7 +34,7 @@ TLX_ATTRIBUTE_FORMAT_PRINTF(1, 2);
  * \param fmt printf format and additional parameters
  */
 std::string ssnprintf(size_t max_size, const char* fmt, ...)
-TLX_ATTRIBUTE_FORMAT_PRINTF(2, 3);
+    TLX_ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 //! \}
 

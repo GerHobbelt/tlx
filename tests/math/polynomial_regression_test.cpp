@@ -8,13 +8,13 @@
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
-#include <tlx/math/polynomial_regression.hpp>
-
-#include <iomanip>
-#include <iostream>
-
 #include <tlx/die.hpp>
 #include <tlx/logger.hpp>
+#include <tlx/math/polynomial_regression.hpp>
+#include <cmath>
+#include <cstddef>
+#include <iostream>
+#include <vector>
 
 static void test1() {
     tlx::PolynomialRegression<double, /* WithStore */ true> pr(2);
@@ -91,19 +91,18 @@ static void test5() {
 }
 
 template <typename PolynomialRegression>
-void dump(PolynomialRegression& pr, double xmin, double xmax) {
-    LOG1 << "# " << std::vector<double>(pr.coefficients())
-         << ", r^2 " << pr.r_square();
+void dump(PolynomialRegression& pr, double xmin, double xmax)
+{
+    LOG1 << "# " << std::vector<double>(pr.coefficients()) << ", r^2 "
+         << pr.r_square();
 
-    for (double x = xmin; x <= xmax; x += 0.1) {
-        std::cout << x << '\t' << pr.evaluate(x) << std::endl;
-    }
-    std::cout << std::endl;
-    std::cout << std::endl;
+    for (double x = xmin; x <= xmax; x += 0.1)
+        std::cout << x << '\t' << pr.evaluate(x) << '\n';
+    std::cout << '\n';
+    std::cout << '\n';
 
-    for (size_t i = 0; i < pr.size(); ++i) {
-        std::cout << pr.point(i).x << '\t' << pr.point(i).y << std::endl;
-    }
+    for (size_t i = 0; i < pr.size(); ++i)
+        std::cout << pr.point(i).x << '\t' << pr.point(i).y << '\n';
 }
 
 static void test6() {

@@ -8,15 +8,14 @@
 # All rights reserved. Published under the Boost Software License, Version 1.0
 ################################################################################
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.7...3.31)
 
-if(NOT TARGET tlx)
+if(TARGET tlx)
+  return()
+endif()
 
 # custom cmake scripts
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/misc/cmake)
-
-# project
-project(tlx)
 
 # default to Debug building for single-config generators
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -44,6 +43,11 @@ set(TLX_VERSION "0.6.1")
 set(TLX_SOVERSION "0.6")
 #[[end]]
 
+# project
+project(tlx
+  LANGUAGES CXX
+  VERSION ${TLX_VERSION})
+
 ################################################################################
 ### Options and Switches
 
@@ -61,6 +65,9 @@ option(TLX_MORE_TESTS
 
 option(TLX_WARNINGS_ARE_ERRORS
   "Compile with flags such that warnings are error." OFF)
+
+option(TLX_USE_CLANG_TIDY
+  "Compile with clang-tidy." OFF)
 
 ### building shared and/or static libraries
 
@@ -272,6 +279,21 @@ endif()
 message(STATUS "TLX CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 
 ###############################################################################
+# enable clang-tidy analysis
+
+if(TLX_USE_CLANG_TIDY)
+
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+
+  # Generate a compile_commands.json to be used by external tools.
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES
+    ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+
+endif()
+
+###############################################################################
 # enable gcov coverage analysis with gcc
 
 if(TLX_USE_GCOV)
@@ -393,7 +415,7 @@ if(TLX_TRY_COMPILE_HEADERS)
     set(source_name "${PROJECT_BINARY_DIR}/try_compile/${target_name}.cpp")
 
     file(WRITE ${source_name}
-      "#include <${header_file}>
+      "#include <${header_file}> // NOLINT(misc-include-cleaner)
        int main(void) { return 0; }")
 
     add_executable(${target_name} ${source_name})
@@ -416,11 +438,15 @@ endif(TLX_TRY_COMPILE_HEADERS)
 # export macros for building with tlx to global CACHE
 # NOTE: this is for old-school cmake, better just add tlx to link_libaries
 
+set(TLX_CXX_FLAGS "")
 set(TLX_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}")
 set(TLX_LIBRARIES "tlx")
+set(TLX_EXTRA_LIBRARIES "")
 
+set(TLX_CXX_FLAGS "Additional compiler flags for TLX")
 set(TLX_INCLUDE_DIRS "${TLX_INCLUDE_DIRS}" CACHE STRING "Include paths for TLX")
 set(TLX_LIBRARIES "${TLX_LIBRARIES}" CACHE STRING "Libraries to link for TLX")
+set(TLX_EXTRA_LIBRARIES "${TLX_EXTRA_LIBRARIES}" CACHE STRING "Extra libraries to link for TLX")
 
 ###############################################################################
 # export targets to cmake project config file
@@ -464,9 +490,5 @@ if(TLX_INSTALL_PKGCONFIG_DIR)
   install(FILES ${PROJECT_BINARY_DIR}/${TLX_LIBNAME}.pc
     DESTINATION ${TLX_INSTALL_PKGCONFIG_DIR})
 endif()
-
-################################################################################
-
-endif(NOT TARGET tlx)
 
 ################################################################################

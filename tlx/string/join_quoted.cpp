@@ -9,51 +9,65 @@
  ******************************************************************************/
 
 #include <tlx/string/join_quoted.hpp>
+#include <cstddef>
+#include <string>
+#include <vector>
 
 namespace tlx {
 
-std::string join_quoted(
-    const std::vector<std::string>& vec, char sep, char quote, char escape) {
-
+std::string join_quoted(const std::vector<std::string>& strs, char sep,
+                        char quote, char escape)
+{
     std::string out;
-    if (vec.empty()) return out;
+    if (strs.empty())
+        return out;
 
-    for (size_t i = 0; i < vec.size(); ++i) {
+    for (size_t i = 0; i < strs.size(); ++i)
+    {
         if (i != 0)
             out += sep;
 
-        if (vec[i].find(sep) != std::string::npos) {
+        if (strs[i].find(sep) != std::string::npos)
+        {
             out += quote;
-            for (std::string::const_iterator it = vec[i].begin();
-                 it != vec[i].end(); ++it) {
-                if (*it == quote || *it == escape) {
+            for (std::string::const_iterator it = strs[i].begin();
+                 it != strs[i].end(); ++it)
+            {
+                if (*it == quote || *it == escape)
+                {
                     out += escape, out += *it;
                 }
-                else if (*it == '\n') {
+                else if (*it == '\n')
+                {
                     out += escape, out += 'n';
                 }
-                else if (*it == '\r') {
+                else if (*it == '\r')
+                {
                     out += escape, out += 'r';
                 }
-                else if (*it == '\t') {
+                else if (*it == '\t')
+                {
                     out += escape, out += 't';
                 }
-                else {
+                else
+                {
                     out += *it;
                 }
             }
             out += quote;
         }
-        else {
-            out += vec[i];
+        else
+        {
+            out += strs[i];
         }
     }
 
     return out;
 }
 
-std::string join_quoted(const std::vector<std::string>& vec) {
-    return join_quoted(vec, ' ', '"', '\\');
+std::string join_quoted(const std::vector<std::string>& strs)
+{
+    return join_quoted(strs, ' ', '"', '\\');
 }
 
 } // namespace tlx

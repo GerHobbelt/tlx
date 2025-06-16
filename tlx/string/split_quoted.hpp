@@ -3,7 +3,7 @@
  *
  * Part of tlx - http://panthema.net/tlx
  *
- * Copyright (C) 2016-2018 Timo Bingmann <tb@panthema.net>
+ * Copyright (C) 2016-2024 Timo Bingmann <tb@panthema.net>
  *
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
@@ -11,6 +11,7 @@
 #ifndef TLX_STRING_SPLIT_QUOTED_HEADER
 #define TLX_STRING_SPLIT_QUOTED_HEADER
 
+#include <tlx/container/string_view.hpp>
 #include <string>
 #include <vector>
 
@@ -27,8 +28,8 @@ namespace tlx {
  * substrings. Quoted fields extend to the next quote. Quoted fields may
  * containg escaped quote, and \\n \\r \\t \\\\ sequences.
  */
-std::vector<std::string> split_quoted(
-    const std::string& str, char sep, char quote, char escape);
+std::vector<std::string> split_quoted(tlx::string_view str, char sep,
+                                      char quote, char escape);
 
 /*!
  * Split the given string at each space into distinct substrings. Multiple
@@ -36,7 +37,7 @@ std::vector<std::string> split_quoted(
  * fields extend to the next quote. Quoted fields may containg escaped quote,
  * and \\n \\r \\t \\\\ sequences.
  */
-std::vector<std::string> split_quoted(const std::string& str);
+std::vector<std::string> split_quoted(tlx::string_view str);
 
 //! \}
 //! \}

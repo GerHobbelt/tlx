@@ -13,6 +13,7 @@
 
 #include <array>
 #include <cstddef>
+#include <type_traits>
 
 namespace tlx {
 
@@ -21,10 +22,14 @@ namespace tlx {
 
 //! test if is std::array<T, N>
 template <typename T>
-struct is_std_array : public std::false_type { };
+struct is_std_array : public std::false_type
+{
+};
 
 template <typename T, size_t N>
-struct is_std_array<std::array<T, N> >: public std::true_type { };
+struct is_std_array<std::array<T, N> > : public std::true_type
+{
+};
 
 //! \}
 

@@ -9,25 +9,27 @@
  ******************************************************************************/
 
 #include <tlx/container/splay_tree.hpp>
-
 #include <tlx/die.hpp>
-
 #include <algorithm>
+#include <cstddef>
 #include <deque>
-#include <iterator>
 #include <random>
 #include <set>
 #include <vector>
 
-struct MyStruct {
+struct MyStruct
+{
     int i1, i2;
 
-    MyStruct(int _i1, int _i2)
-        : i1(_i1), i2(_i2) { }
+    MyStruct(int _i1, int _i2) : i1(_i1), i2(_i2)
+    {
+    }
 };
 
-struct MyStructCompare {
-    bool operator () (const MyStruct& a, const MyStruct& b) const {
+struct MyStructCompare
+{
+    bool operator()(const MyStruct& a, const MyStruct& b) const
+    {
         return a.i1 < b.i1;
     }
 };
@@ -40,8 +42,7 @@ static void compare(const tlx::SplayTree<size_t>& tree,
     die_unless(tree.check());
 
     std::vector<size_t> preorder;
-    tree.traverse_preorder(
-        [&](const size_t& t) { preorder.push_back(t); });
+    tree.traverse_preorder([&](const size_t& t) { preorder.push_back(t); });
 
     std::vector<size_t> check_vec(check.begin(), check.end());
     die_unless(check_vec == preorder);
@@ -54,7 +55,8 @@ static void test1() {
     Tree tree;
     std::set<size_t> check;
 
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++)
+    {
         size_t value = (541 * i) & 1023;
         tree.insert(value);
         check.insert(value);
@@ -62,7 +64,8 @@ static void test1() {
 
     compare(tree, check);
 
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++)
+    {
         size_t value = (541 * i) & 1023;
         tree.erase(value);
         check.erase(value);
@@ -70,7 +73,8 @@ static void test1() {
         compare(tree, check);
     }
 
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++)
+    {
         size_t value = (541 * i) & 1023;
         tree.insert(value);
         check.insert(value);
@@ -78,12 +82,14 @@ static void test1() {
 
     std::vector<size_t> check_vec(check.begin(), check.end());
 
-    for (size_t i = 0; i < 1000; i = i + 20) {
+    for (size_t i = 0; i < 1000; i = i + 20)
+    {
         const Tree::Node* t = tree.find(i);
         die_unequal(check.count(i) == 1, t->key == i);
     }
 
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++)
+    {
         tree.erase((541 * i) & 1023);
     }
 }
@@ -96,7 +102,8 @@ static void test2_random() {
     std::default_random_engine rng(1234);
 
     size_t limit = 1000;
-    for (size_t i = 0; i < limit; ++i) {
+    for (size_t i = 0; i < limit; ++i)
+    {
         size_t op = rng() % 2;
         if (op == 0 && limit > i + check.size())
         {
@@ -104,7 +111,7 @@ static void test2_random() {
             tree.insert(v);
             check.insert(std::lower_bound(check.begin(), check.end(), v), v);
         }
-        else if (check.size())
+        else if (!check.empty())
         {
             size_t idx = rng() % check.size();
             auto it = check.begin() + idx;
@@ -115,8 +122,7 @@ static void test2_random() {
         }
 
         std::deque<size_t> preorder;
-        tree.traverse_preorder(
-            [&](const size_t& t) { preorder.push_back(t); });
+        tree.traverse_preorder([&](const size_t& t) { preorder.push_back(t); });
 
         die_unless(check == preorder);
     }
@@ -126,7 +132,8 @@ static void test3_empty() {
 
     tlx::SplayTree<size_t> tree;
 
-    for (size_t i = 0; i < 100; i++) {
+    for (size_t i = 0; i < 100; i++)
+    {
         size_t value = (541 * i) & 1023;
         tree.insert(value);
     }

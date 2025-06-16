@@ -9,23 +9,25 @@
  ******************************************************************************/
 
 #include <tlx/container/string_view.hpp>
-#include <tlx/string/split_view.hpp>
-
 #include <tlx/die.hpp>
+#include <tlx/string/split_view.hpp>
+#include <cstddef>
+#include <string>
 
-void construct_empty() {
+void construct_empty()
+{
     tlx::StringView empty(nullptr);
-    die_unequal(empty.size(), 0u);
+    die_unequal(empty.size(), 0U);
 }
 
-void assign_and_compare() {
-
+void assign_and_compare()
+{
     std::string input = "This is a string which does things and is our input.";
     std::string input2 = "is a string1";
 
     tlx::StringView other_str;
-    tlx::StringView fast_str = tlx::StringView(&input[5], 11);  // "is a string"
-    die_unequal(fast_str.size(), 11u);
+    tlx::StringView fast_str = tlx::StringView(&input[5], 11); // "is a string"
+    die_unequal(fast_str.size(), 11U);
 
     std::string cmp = "is a string";
     die_unless(fast_str == cmp);
@@ -36,31 +38,31 @@ void assign_and_compare() {
     std::string subset = "is a strin";
     die_if(fast_str == subset);
 
-    other_str = tlx::StringView(&input[6], 11);             // "s a string "
+    other_str = tlx::StringView(&input[6], 11); // "s a string "
     die_if(fast_str == other_str);
     die_unless(fast_str != other_str);
-    tlx::StringView equal_str = tlx::StringView(&input2[0], 11); // "is a string"
+    tlx::StringView equal_str =
+        tlx::StringView(input2.data(), 11); // "is a string"
     die_unless(fast_str == equal_str);
     die_if(fast_str != equal_str);
 }
 
-void split_view() {
+void split_view()
+{
     std::string input = "This is a string.";
     size_t i = 0;
-    tlx::split_view(
-        ' ', input,
-        [&](const tlx::string_view& sv) {
-            if (i == 0)
-                die_unequal(sv, "This");
-            if (i == 1)
-                die_unequal(sv, "is");
-            if (i == 2)
-                die_unequal(sv, "a");
-            if (i == 3)
-                die_unequal(sv, "string.");
-            ++i;
-        });
-    die_unequal(i, 4u);
+    tlx::split_callback(' ', input, [&](const tlx::string_view& sv) {
+        if (i == 0)
+            die_unequal(sv, "This");
+        if (i == 1)
+            die_unequal(sv, "is");
+        if (i == 2)
+            die_unequal(sv, "a");
+        if (i == 3)
+            die_unequal(sv, "string.");
+        ++i;
+    });
+    die_unequal(i, 4U);
 }
 
 

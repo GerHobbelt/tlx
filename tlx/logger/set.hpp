@@ -12,7 +12,7 @@
 #define TLX_LOGGER_SET_HEADER
 
 #include <tlx/logger/core.hpp>
-
+#include <ostream>
 #include <set>
 
 namespace tlx {
@@ -21,12 +21,14 @@ template <typename T, typename C, typename A>
 class LoggerFormatter<std::set<T, C, A> >
 {
 public:
-    static void print(std::ostream& os, const std::set<T, C, A>& data) {
+    static void print(std::ostream& os, const std::set<T, C, A>& data)
+    {
         os << '{';
         for (typename std::set<T, C, A>::const_iterator it = data.begin();
              it != data.end(); ++it)
         {
-            if (it != data.begin()) os << ',';
+            if (it != data.begin())
+                os << ',';
             LoggerFormatter<T>::print(os, *it);
         }
         os << '}';
@@ -37,12 +39,14 @@ template <typename T, typename C, typename A>
 class LoggerFormatter<std::multiset<T, C, A> >
 {
 public:
-    static void print(std::ostream& os, const std::multiset<T, C, A>& data) {
+    static void print(std::ostream& os, const std::multiset<T, C, A>& data)
+    {
         os << '{';
         for (typename std::multiset<T, C, A>::const_iterator it = data.begin();
              it != data.end(); ++it)
         {
-            if (it != data.begin()) os << ',';
+            if (it != data.begin())
+                os << ',';
             LoggerFormatter<T>::print(os, *it);
         }
         os << '}';

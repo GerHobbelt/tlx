@@ -12,6 +12,7 @@
 #define TLX_META_IS_STD_TUPLE_HEADER
 
 #include <tuple>
+#include <type_traits>
 
 namespace tlx {
 
@@ -20,10 +21,14 @@ namespace tlx {
 
 //! test if is a std::tuple<...>
 template <typename T>
-struct is_std_tuple : public std::false_type { };
+struct is_std_tuple : public std::false_type
+{
+};
 
 template <typename... Ts>
-struct is_std_tuple<std::tuple<Ts...> >: public std::true_type { };
+struct is_std_tuple<std::tuple<Ts...> > : public std::true_type
+{
+};
 
 //! \}
 

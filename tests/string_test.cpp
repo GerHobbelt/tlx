@@ -8,19 +8,56 @@
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
-#include <cstdint>
-#include <random>
-#include <stdexcept>
-
+#include <tlx/container/string_view.hpp>
 #include <tlx/define/endian.hpp>
 #include <tlx/die.hpp>
 #include <tlx/port/setenv.hpp>
-#include <tlx/string.hpp>
 #include <tlx/string/appendline.hpp>
+#include <tlx/string/base64.hpp>
+#include <tlx/string/bitdump.hpp>
+#include <tlx/string/compare_icase.hpp>
+#include <tlx/string/contains_word.hpp>
+#include <tlx/string/ends_with.hpp>
+#include <tlx/string/equal_icase.hpp>
+#include <tlx/string/erase_all.hpp>
+#include <tlx/string/escape_html.hpp>
+#include <tlx/string/escape_uri.hpp>
+#include <tlx/string/expand_environment_variables.hpp>
+#include <tlx/string/extract_between.hpp>
+#include <tlx/string/format_iec_units.hpp>
+#include <tlx/string/format_si_units.hpp>
+#include <tlx/string/hash_djb2.hpp>
+#include <tlx/string/hash_sdbm.hpp>
+#include <tlx/string/hexdump.hpp>
+#include <tlx/string/join.hpp>
+#include <tlx/string/join_quoted.hpp>
+#include <tlx/string/less_icase.hpp>
+#include <tlx/string/levenshtein.hpp>
+#include <tlx/string/parse_si_iec_units.hpp>
+#include <tlx/string/parse_uri.hpp>
+#include <tlx/string/parse_uri_form_data.hpp>
+#include <tlx/string/replace.hpp>
+#include <tlx/string/split.hpp>
+#include <tlx/string/split_quoted.hpp>
+#include <tlx/string/split_view.hpp>
+#include <tlx/string/split_words.hpp>
+#include <tlx/string/ssprintf.hpp>
 #include <tlx/string/ssprintf_generic.hpp>
+#include <tlx/string/starts_with.hpp>
+#include <tlx/string/to_lower.hpp>
+#include <tlx/string/to_upper.hpp>
+#include <tlx/string/trim.hpp>
+#include <tlx/string/word_wrap.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <random>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 //! Returns an initialized unsigned char[] array inside an std::string
-#define ARRAY_AS_STRING(array) \
+#define ARRAY_AS_STRING(array)                                                 \
     std::string(reinterpret_cast<const char*>(array), sizeof(array))
 
 /*!
@@ -31,8 +68,8 @@
  * \param size  length of result
  * \return      random binary string of given length
  */
-static inline
-std::string random_binary(std::string::size_type size) {
+static inline std::string random_binary(std::string::size_type size)
+{
     static std::random_device random_device;
     std::minstd_rand prng(random_device());
 
@@ -45,9 +82,12 @@ std::string random_binary(std::string::size_type size) {
     return out;
 }
 
-static void test_appendline() {
-    std::string input =
-        "abc\n" "def\n" "ghi\n" "jk";
+static void test_appendline()
+{
+    std::string input = "abc\n"
+                        "def\n"
+                        "ghi\n"
+                        "jk";
 
     std::stringstream ss1(input);
     std::string line;
@@ -78,17 +118,15 @@ static void test_appendline() {
     die_if(tlx::appendline(ss2, line));
 }
 
-static void test_base64() {
+static void test_base64()
+{
     // take some static hex data and dump it using base64 encoding, then decode
     // it again.
     const unsigned char rand1data[42] = {
-        0x16, 0x35, 0xCA, 0x03, 0x90, 0x6B, 0x47, 0x11,
-        0x85, 0x02, 0xE7, 0x40, 0x9E, 0x3A, 0xCE, 0x43,
-        0x0C, 0x57, 0x3E, 0x35, 0xE7, 0xA6, 0xB2, 0x37,
-        0xEC, 0x6D, 0xF6, 0x68, 0xF6, 0x0E, 0x74, 0x0C,
-        0x44, 0x3F, 0x0F, 0xD4, 0xAA, 0x56, 0xE5, 0x2F,
-        0x58, 0xCC
-    };
+        0x16, 0x35, 0xCA, 0x03, 0x90, 0x6B, 0x47, 0x11, 0x85, 0x02, 0xE7,
+        0x40, 0x9E, 0x3A, 0xCE, 0x43, 0x0C, 0x57, 0x3E, 0x35, 0xE7, 0xA6,
+        0xB2, 0x37, 0xEC, 0x6D, 0xF6, 0x68, 0xF6, 0x0E, 0x74, 0x0C, 0x44,
+        0x3F, 0x0F, 0xD4, 0xAA, 0x56, 0xE5, 0x2F, 0x58, 0xCC};
 
     std::string rand1 = ARRAY_AS_STRING(rand1data);
 
@@ -102,9 +140,10 @@ static void test_base64() {
     // check line-splitting
     std::string rand1base64lines = tlx::base64_encode(rand1, 16);
 
-    die_unequal(rand1base64lines,
-                "FjXKA5BrRxGFAudA\n" "njrOQwxXPjXnprI3\n"
-                "7G32aPYOdAxEPw/U\n" "qlblL1jM");
+    die_unequal(rand1base64lines, "FjXKA5BrRxGFAudA\n"
+                                  "njrOQwxXPjXnprI3\n"
+                                  "7G32aPYOdAxEPw/U\n"
+                                  "qlblL1jM");
 
     // take three random binary data string with different sizes and run
     // the base64 encoding->decoding->checking drill.
@@ -124,15 +163,15 @@ static void test_base64() {
         unsigned int randlen = ti; // rand() % 1000;
         std::string randstr = random_binary(randlen);
 
-        die_unequal(
-            tlx::base64_decode(tlx::base64_encode(randstr)), randstr);
+        die_unequal(tlx::base64_decode(tlx::base64_encode(randstr)), randstr);
     }
 
-    die_unless_throws(
-        tlx::base64_decode("FjXKA5!!RxGFAudA"), std::runtime_error);
+    die_unless_throws(tlx::base64_decode("FjXKA5!!RxGFAudA"),
+                      std::runtime_error);
 }
 
-static void test_bitdump() {
+static void test_bitdump()
+{
     die_unequal(tlx::bitdump_8_msb("0123"),
                 "00110000 00110001 00110010 00110011");
     die_unequal(tlx::bitdump_8_lsb("0123"),
@@ -169,7 +208,8 @@ static void test_bitdump() {
 #endif
 }
 
-static void test_compare_icase() {
+static void test_compare_icase()
+{
     die_unless(std::string("ABC") != std::string("abc"));
 
     die_unless(tlx::equal_icase("ABC", "abc"));
@@ -186,7 +226,8 @@ static void test_compare_icase() {
     die_unless(tlx::compare_icase("ABC", "abb") > 0);
 }
 
-static void test_contains_word() {
+static void test_contains_word()
+{
     std::string data = "test admin write readall read do";
 
     die_unless(tlx::contains_word(data, "test"));
@@ -201,19 +242,15 @@ static void test_contains_word() {
     die_unless(!tlx::contains_word(data, "doit"));
 }
 
-static void test_erase_all() {
+static void test_erase_all()
+{
+    die_unequal(tlx::erase_all(" abcdef   ghi jk "), "abcdefghijk");
 
-    die_unequal(
-        tlx::erase_all(" abcdef   ghi jk "), "abcdefghijk");
+    die_unequal(tlx::erase_all("abcdef   ghi jk"), "abcdefghijk");
 
-    die_unequal(
-        tlx::erase_all("abcdef   ghi jk"), "abcdefghijk");
+    die_unequal(tlx::erase_all(" abcdef   ghi jk ", " bg"), "acdefhijk");
 
-    die_unequal(
-        tlx::erase_all(" abcdef   ghi jk ", " bg"), "acdefhijk");
-
-    die_unequal(
-        tlx::erase_all("abcdef   ghi jk", " bg"), "acdefhijk");
+    die_unequal(tlx::erase_all("abcdef   ghi jk", " bg"), "acdefhijk");
 
     std::string s1 = " abcdef   ghi jk ";
     die_unequal(tlx::erase_all(&s1), "abcdefghijk");
@@ -228,27 +265,24 @@ static void test_erase_all() {
     die_unequal(tlx::erase_all(&s4, " bg"), "acdefhijk");
 }
 
-static void test_escape_html() {
-
-    die_unequal(
-        tlx::escape_html("hello <tag> \"abc\" & \"def\""),
-        "hello &lt;tag&gt; &quot;abc&quot; &amp; &quot;def&quot;");
+static void test_escape_html()
+{
+    die_unequal(tlx::escape_html("hello <tag> \"abc\" & \"def\""),
+                "hello &lt;tag&gt; &quot;abc&quot; &amp; &quot;def&quot;");
 }
 
-static void test_escape_uri() {
-
-    die_unequal(
-        tlx::escape_uri("hello <tag>\""), "hello%20%3Ctag%3E%22");
+static void test_escape_uri()
+{
+    die_unequal(tlx::escape_uri("hello <tag>\""), "hello%20%3Ctag%3E%22");
 }
 
-static void test_expand_environment_variables() {
+static void test_expand_environment_variables()
+{
+    tlx::setenv("TEST_1", "def", /* overwrite */ 1);
+    tlx::setenv("VAR_2", "uvw", /* overwrite */ 1);
 
-    tlx::setenv("TEST_1", "def", /* overwrite */ true);
-    tlx::setenv("VAR_2", "uvw", /* overwrite */ true);
-
-    die_unequal(
-        tlx::expand_environment_variables("abc$TEST_1 ---${VAR_2}xyz"),
-        "abcdef ---uvwxyz");
+    die_unequal(tlx::expand_environment_variables("abc$TEST_1 ---${VAR_2}xyz"),
+                "abcdef ---uvwxyz");
 
     die_unequal(
         tlx::expand_environment_variables("abc$4TEST_1 -$$--${VAR_2}xyz"),
@@ -259,7 +293,8 @@ static void test_expand_environment_variables() {
         "abcxyz");
 }
 
-static void test_extract_between() {
+static void test_extract_between()
+{
     std::string data =
         "Content-Disposition: form-data; name='testfile'; filename='test.html'";
 
@@ -270,32 +305,29 @@ static void test_extract_between() {
     die_unequal(tlx::extract_between(data, "Name='", "'"), "");
 }
 
-static void test_format_si_iec_units() {
-
+static void test_format_si_iec_units()
+{
     die_unequal(tlx::format_si_units(33 * 1024 * 1024 * 1024LLU), "35.433 G");
     die_unequal(tlx::format_iec_units(33 * 1024 * 1024 * 1024LLU), "33.000 Gi");
 }
 
-static void test_hash_djb2() {
-    die_unequal(
-        tlx::hash_djb2("hello hash me"), 0x2DA4090Fu);
-    die_unequal(
-        tlx::hash_djb2(std::string("hello hash me")), 0x2DA4090Fu);
+static void test_hash_djb2()
+{
+    die_unequal(tlx::hash_djb2("hello hash me"), 0x2DA4090FU);
+    die_unequal(tlx::hash_djb2(std::string("hello hash me")), 0x2DA4090FU);
 }
 
-static void test_hash_sdbm() {
-    die_unequal(
-        tlx::hash_sdbm("hello hash me"), 0x290130BCu);
-    die_unequal(
-        tlx::hash_sdbm(std::string("hello hash me")), 0x290130BCu);
+static void test_hash_sdbm()
+{
+    die_unequal(tlx::hash_sdbm("hello hash me"), 0x290130BCU);
+    die_unequal(tlx::hash_sdbm(std::string("hello hash me")), 0x290130BCU);
 }
 
-static void test_hexdump() {
-
+static void test_hexdump()
+{
     // take hex data and dump it into a string, then parse back into array
-    const unsigned char hexdump[8] = {
-        0x8D, 0xE2, 0x85, 0xD4, 0xBF, 0x98, 0xE6, 0x03
-    };
+    const unsigned char hexdump[8] = {0x8D, 0xE2, 0x85, 0xD4,
+                                      0xBF, 0x98, 0xE6, 0x03};
 
     std::string hexdata = ARRAY_AS_STRING(hexdump);
     std::string hexstring = tlx::hexdump(hexdata);
@@ -316,29 +348,27 @@ static void test_hexdump() {
     std::string hexsource = tlx::hexdump_sourcecode(hexdata, "abc");
 
     const unsigned char hexsourcecmp[73] = {
-        0x63, 0x6F, 0x6E, 0x73, 0x74, 0x20, 0x73, 0x74,
-        0x64, 0x3A, 0x3A, 0x75, 0x69, 0x6E, 0x74, 0x38,
-        0x5F, 0x74, 0x20, 0x61, 0x62, 0x63, 0x5B, 0x38,
-        0x5D, 0x20, 0x3D, 0x20, 0x7B, 0x0A, 0x30, 0x78,
-        0x38, 0x44, 0x2C, 0x30, 0x78, 0x45, 0x32, 0x2C,
-        0x30, 0x78, 0x38, 0x35, 0x2C, 0x30, 0x78, 0x44,
-        0x34, 0x2C, 0x30, 0x78, 0x42, 0x46, 0x2C, 0x30,
-        0x78, 0x39, 0x38, 0x2C, 0x30, 0x78, 0x45, 0x36,
-        0x2C, 0x30, 0x78, 0x30, 0x33, 0x0A, 0x7D, 0x3B,
-        0x0A
-    };
+        0x63, 0x6F, 0x6E, 0x73, 0x74, 0x20, 0x73, 0x74, 0x64, 0x3A, 0x3A,
+        0x75, 0x69, 0x6E, 0x74, 0x38, 0x5F, 0x74, 0x20, 0x61, 0x62, 0x63,
+        0x5B, 0x38, 0x5D, 0x20, 0x3D, 0x20, 0x7B, 0x0A, 0x30, 0x78, 0x38,
+        0x44, 0x2C, 0x30, 0x78, 0x45, 0x32, 0x2C, 0x30, 0x78, 0x38, 0x35,
+        0x2C, 0x30, 0x78, 0x44, 0x34, 0x2C, 0x30, 0x78, 0x42, 0x46, 0x2C,
+        0x30, 0x78, 0x39, 0x38, 0x2C, 0x30, 0x78, 0x45, 0x36, 0x2C, 0x30,
+        0x78, 0x30, 0x33, 0x0A, 0x7D, 0x3B, 0x0A};
 
     die_unequal(hexsource, ARRAY_AS_STRING(hexsourcecmp));
 
     // test parse_hexdump with illegal strings
     die_unless_throws(tlx::parse_hexdump("illegal"), std::runtime_error);
-    die_unless_throws(tlx::parse_hexdump("8DE285D4BF98E60"), std::runtime_error);
+    die_unless_throws(tlx::parse_hexdump("8DE285D4BF98E60"),
+                      std::runtime_error);
 }
 
-static void test_join() {
+static void test_join()
+{
     // simple string split and join
     std::vector<std::string> sv = tlx::split('/', "/usr/bin/test");
-    die_unequal(sv.size(), 4u);
+    die_unequal(sv.size(), 4U);
 
     die_unequal(tlx::join("--", sv), "--usr--bin--test");
     die_unequal(tlx::join(";", sv), ";usr;bin;test");
@@ -350,20 +380,22 @@ static void test_join() {
     die_unequal(tlx::join(".", sv2), "abc.abc.abc.abc.abc.abc");
 }
 
-static void test_levenshtein() {
-    die_unequal(tlx::levenshtein("Demonstration", "Comparison"), 9u);
-    die_unequal(tlx::levenshtein("Levenshtein", "Distance"), 10u);
-    die_unequal(tlx::levenshtein("Distance", "Distance"), 0u);
-    die_unequal(tlx::levenshtein("Distance", "LVDistance"), 2u);
+static void test_levenshtein()
+{
+    die_unequal(tlx::levenshtein("Demonstration", "Comparison"), 9U);
+    die_unequal(tlx::levenshtein("Levenshtein", "Distance"), 10U);
+    die_unequal(tlx::levenshtein("Distance", "Distance"), 0U);
+    die_unequal(tlx::levenshtein("Distance", "LVDistance"), 2U);
 
-    die_unequal(tlx::levenshtein_icase("distance", "DISTANCE"), 0u);
-    die_unequal(tlx::levenshtein_icase("Levenshtein", "Distance"), 10u);
+    die_unequal(tlx::levenshtein_icase("distance", "DISTANCE"), 0U);
+    die_unequal(tlx::levenshtein_icase("Levenshtein", "Distance"), 10U);
 
-    die_unequal(tlx::levenshtein_icase("Test this distance", "to this one"), 9u);
+    die_unequal(tlx::levenshtein_icase("Test this distance", "to this one"),
+                9U);
 }
 
-static void test_parse_si_iec_units() {
-
+static void test_parse_si_iec_units()
+{
     std::uint64_t size;
     die_unless(tlx::parse_si_iec_units(" 33 GiB ", &size));
     die_unequal(33 * 1024 * 1024 * 1024LLU, size);
@@ -371,36 +403,36 @@ static void test_parse_si_iec_units() {
     die_if(tlx::parse_si_iec_units(" 33 GiBX ", &size));
 }
 
-static void test_parse_uri() {
+static void test_parse_uri()
+{
     tlx::string_view path, query_string, fragment;
 
-    tlx::parse_uri("/path/path1?qkey=qval#frag",
-                   &path, &query_string, &fragment);
+    tlx::parse_uri("/path/path1?qkey=qval#frag", &path, &query_string,
+                   &fragment);
     die_unequal(path, "/path/path1");
     die_unequal(query_string, "qkey=qval");
     die_unequal(fragment, "frag");
 
-    tlx::parse_uri("/path/path1?qkey=qval",
-                   &path, &query_string, &fragment);
+    tlx::parse_uri("/path/path1?qkey=qval", &path, &query_string, &fragment);
     die_unequal(path, "/path/path1");
     die_unequal(query_string, "qkey=qval");
     die_unequal(fragment, "");
 
-    tlx::parse_uri("/path/path1",
-                   &path, &query_string, &fragment);
+    tlx::parse_uri("/path/path1", &path, &query_string, &fragment);
     die_unequal(path, "/path/path1");
     die_unequal(query_string, "");
     die_unequal(fragment, "");
 }
 
-static void test_parse_uri_form_data() {
+static void test_parse_uri_form_data()
+{
     std::vector<std::string> key, value;
 
-    tlx::parse_uri_form_data("qkey=qval&qke+y2=qval2%21-&q=abc%3zdf",
-                             &key, &value);
+    tlx::parse_uri_form_data("qkey=qval&qke+y2=qval2%21-&q=abc%3zdf", &key,
+                             &value);
 
-    die_unequal(key.size(), 3u);
-    die_unequal(value.size(), 3u);
+    die_unequal(key.size(), 3U);
+    die_unequal(value.size(), 3U);
     die_unequal(key[0], "qkey");
     die_unequal(value[0], "qval");
     die_unequal(key[1], "qke y2");
@@ -408,44 +440,41 @@ static void test_parse_uri_form_data() {
     die_unequal(key[2], "q");
     die_unequal(value[2], "abc%3zdf");
 
-    tlx::parse_uri_form_data("qkey",
-                             &key, &value);
+    tlx::parse_uri_form_data("qkey", &key, &value);
 
-    die_unequal(key.size(), 1u);
-    die_unequal(value.size(), 1u);
+    die_unequal(key.size(), 1U);
+    die_unequal(value.size(), 1U);
     die_unequal(key[0], "qkey");
     die_unequal(value[0], "");
 
-    tlx::parse_uri_form_data("qkey=",
-                             &key, &value);
+    tlx::parse_uri_form_data("qkey=", &key, &value);
 
-    die_unequal(key.size(), 1u);
-    die_unequal(value.size(), 1u);
+    die_unequal(key.size(), 1U);
+    die_unequal(value.size(), 1U);
     die_unequal(key[0], "qkey");
     die_unequal(value[0], "");
 
-    tlx::parse_uri_form_data("qkey=&",
-                             &key, &value);
+    tlx::parse_uri_form_data("qkey=&", &key, &value);
 
-    die_unequal(key.size(), 1u);
-    die_unequal(value.size(), 1u);
+    die_unequal(key.size(), 1U);
+    die_unequal(value.size(), 1U);
     die_unequal(key[0], "qkey");
     die_unequal(value[0], "");
 
-    tlx::parse_uri_form_data("qkey=%01%02%03%AA%aa%0D%A0&",
-                             &key, &value);
+    tlx::parse_uri_form_data("qkey=%01%02%03%AA%aa%0D%A0&", &key, &value);
 
-    die_unequal(key.size(), 1u);
-    die_unequal(value.size(), 1u);
+    die_unequal(key.size(), 1U);
+    die_unequal(value.size(), 1U);
     die_unequal(key[0], "qkey");
     die_unequal(value[0], "\x01\x02\x03\xAA\xAA\x0D\xA0");
 }
 
-static void test_split() {
+static void test_split()
+{
     // simple char split
     std::vector<std::string> sv = tlx::split('/', "/usr/bin/test/");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr");
     die_unequal(sv[2], "bin");
@@ -454,23 +483,23 @@ static void test_split() {
 
     sv = tlx::split('/', "/usr/bin/test", 3);
 
-    die_unequal(sv.size(), 3u);
+    die_unequal(sv.size(), 3U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr");
     die_unequal(sv[2], "bin/test");
 
     // char split with some strange limits
     sv = tlx::split('/', "/usr//bin/test", 0);
-    die_unequal(sv.size(), 0u);
+    die_unequal(sv.size(), 0U);
 
     sv = tlx::split('/', "/usr//bin/test", 1);
-    die_unequal(sv.size(), 1u);
+    die_unequal(sv.size(), 1U);
     die_unequal(sv[0], "/usr//bin/test");
 
     // simple str split
     sv = tlx::split("/", "/usr/bin/test");
 
-    die_unequal(sv.size(), 4u);
+    die_unequal(sv.size(), 4U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr");
     die_unequal(sv[2], "bin");
@@ -478,22 +507,22 @@ static void test_split() {
 
     sv = tlx::split("/", "/usr/bin/test", 3);
 
-    die_unequal(sv.size(), 3u);
+    die_unequal(sv.size(), 3U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr");
     die_unequal(sv[2], "bin/test");
 
     // str split with some strange limits
     sv = tlx::split("/", "/usr//bin/test", 0);
-    die_unequal(sv.size(), 0u);
+    die_unequal(sv.size(), 0U);
 
     sv = tlx::split("/", "/usr//bin/test", 1);
-    die_unequal(sv.size(), 1u);
+    die_unequal(sv.size(), 1U);
     die_unequal(sv[0], "/usr//bin/test");
 
     // str split with parital needle at end
     sv = tlx::split("abc", "testabcblahabcabcab");
-    die_unequal(sv.size(), 4u);
+    die_unequal(sv.size(), 4U);
     die_unequal(sv[0], "test");
     die_unequal(sv[1], "blah");
     die_unequal(sv[2], "");
@@ -501,7 +530,7 @@ static void test_split() {
 
     // str split with "" separator
     sv = tlx::split("", "abcdef");
-    die_unequal(sv.size(), 6u);
+    die_unequal(sv.size(), 6U);
     die_unequal(sv[0], "a");
     die_unequal(sv[1], "b");
     die_unequal(sv[2], "c");
@@ -513,13 +542,13 @@ static void test_split() {
 
     // str split with min-limit
     sv = tlx::split('/', "/usr/bin/test", 2, 2);
-    die_unequal(sv.size(), 2u);
+    die_unequal(sv.size(), 2U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr/bin/test");
 
     // str split with min-limit
     sv = tlx::split('/', "/usr/bin/test", 5, 5);
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr");
     die_unequal(sv[2], "bin");
@@ -528,7 +557,7 @@ static void test_split() {
 
     // str split with min-limit
     sv = tlx::split("/", "/usr/bin/test", 5, 5);
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "");
     die_unequal(sv[1], "usr");
     die_unequal(sv[2], "bin");
@@ -536,11 +565,108 @@ static void test_split() {
     die_unequal(sv[4], "");
 }
 
-static void test_split_join_quoted() {
+static void test_split_view()
+{
+    // simple char split
+    std::vector<tlx::string_view> sv = tlx::split_view('/', "/usr/bin/test/");
+
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr");
+    die_unequal(sv[2], "bin");
+    die_unequal(sv[3], "test");
+    die_unequal(sv[4], "");
+
+    sv = tlx::split_view('/', "/usr/bin/test", 3);
+
+    die_unequal(sv.size(), 3U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr");
+    die_unequal(sv[2], "bin/test");
+
+    // char split with some strange limits
+    sv = tlx::split_view('/', "/usr//bin/test", 0);
+    die_unequal(sv.size(), 0U);
+
+    sv = tlx::split_view('/', "/usr//bin/test", 1);
+    die_unequal(sv.size(), 1U);
+    die_unequal(sv[0], "/usr//bin/test");
+
+    // simple str split
+    sv = tlx::split_view("/", "/usr/bin/test");
+
+    die_unequal(sv.size(), 4U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr");
+    die_unequal(sv[2], "bin");
+    die_unequal(sv[3], "test");
+
+    sv = tlx::split_view("/", "/usr/bin/test", 3);
+
+    die_unequal(sv.size(), 3U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr");
+    die_unequal(sv[2], "bin/test");
+
+    // str split with some strange limits
+    sv = tlx::split_view("/", "/usr//bin/test", 0);
+    die_unequal(sv.size(), 0U);
+
+    sv = tlx::split_view("/", "/usr//bin/test", 1);
+    die_unequal(sv.size(), 1U);
+    die_unequal(sv[0], "/usr//bin/test");
+
+    // str split with parital needle at end
+    sv = tlx::split_view("abc", "testabcblahabcabcab");
+    die_unequal(sv.size(), 4U);
+    die_unequal(sv[0], "test");
+    die_unequal(sv[1], "blah");
+    die_unequal(sv[2], "");
+    die_unequal(sv[3], "ab");
+
+    // str split with "" separator
+    sv = tlx::split_view("", "abcdef");
+    die_unequal(sv.size(), 6U);
+    die_unequal(sv[0], "a");
+    die_unequal(sv[1], "b");
+    die_unequal(sv[2], "c");
+    die_unequal(sv[3], "d");
+    die_unequal(sv[4], "e");
+    die_unequal(sv[5], "f");
+
+    /**************************************************************************/
+
+    // str split with min-limit
+    sv = tlx::split_view('/', "/usr/bin/test", 2, 2);
+    die_unequal(sv.size(), 2U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr/bin/test");
+
+    // str split with min-limit
+    sv = tlx::split_view('/', "/usr/bin/test", 5, 5);
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr");
+    die_unequal(sv[2], "bin");
+    die_unequal(sv[3], "test");
+    die_unequal(sv[4], "");
+
+    // str split with min-limit
+    sv = tlx::split_view("/", "/usr/bin/test", 5, 5);
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "");
+    die_unequal(sv[1], "usr");
+    die_unequal(sv[2], "bin");
+    die_unequal(sv[3], "test");
+    die_unequal(sv[4], "");
+}
+
+static void test_split_join_quoted()
+{
     // simple whitespace split
     std::vector<std::string> sv = tlx::split_quoted("  ab c df  fdlk f  ");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -553,7 +679,7 @@ static void test_split_join_quoted() {
 
     sv = tlx::split_quoted("ab c df  fdlk f  ");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -566,7 +692,7 @@ static void test_split_join_quoted() {
 
     sv = tlx::split_quoted("ab c df  fdlk f");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -578,7 +704,7 @@ static void test_split_join_quoted() {
     // with quoted entry
     sv = tlx::split_quoted("ab c \"df  fdlk \" f  ");
 
-    die_unequal(sv.size(), 4u);
+    die_unequal(sv.size(), 4U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df  fdlk ");
@@ -589,7 +715,7 @@ static void test_split_join_quoted() {
     // with quoted entry containing quote
     sv = tlx::split_quoted("ab c \"d\\\\f\\n  \\\"fdlk \" f  ");
 
-    die_unequal(sv.size(), 4u);
+    die_unequal(sv.size(), 4U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "d\\f\n  \"fdlk ");
@@ -598,11 +724,12 @@ static void test_split_join_quoted() {
     die_unequal(tlx::join_quoted(sv), "ab c \"d\\\\f\\n  \\\"fdlk \" f");
 }
 
-static void test_split_words() {
+static void test_split_words()
+{
     // simple whitespace split
     std::vector<std::string> sv = tlx::split_words("  ab c df  fdlk f  ");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -611,7 +738,7 @@ static void test_split_words() {
 
     sv = tlx::split_words("ab c df  fdlk f  ");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -620,7 +747,7 @@ static void test_split_words() {
 
     sv = tlx::split_words("ab c df  fdlk f");
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -628,32 +755,32 @@ static void test_split_words() {
     die_unequal(sv[4], "f");
 
     sv = tlx::split_words("");
-    die_unequal(sv.size(), 0u);
+    die_unequal(sv.size(), 0U);
 
     sv = tlx::split_words("    ");
-    die_unequal(sv.size(), 0u);
+    die_unequal(sv.size(), 0U);
 
     // whitespace split with limit
     sv = tlx::split_words("  ab c   df  fdlk f  ", 3);
 
-    die_unequal(sv.size(), 3u);
+    die_unequal(sv.size(), 3U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df  fdlk f  ");
 
     // whitespace split with some strange limits
     sv = tlx::split_words("  ab c df  fdlk f  ", 0);
-    die_unequal(sv.size(), 0u);
+    die_unequal(sv.size(), 0U);
 
     sv = tlx::split_words("  ab c df  fdlk f  ", 1);
 
-    die_unequal(sv.size(), 1u);
+    die_unequal(sv.size(), 1U);
     die_unequal(sv[0], "ab c df  fdlk f  ");
 
     // whitespace split with large limit
     sv = tlx::split_words("  ab  c  df  fdlk f  ", 10);
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -663,7 +790,7 @@ static void test_split_words() {
     // whitespace split with limit at exactly the end
     sv = tlx::split_words("  ab  c  df  fdlk f  ", 5);
 
-    die_unequal(sv.size(), 5u);
+    die_unequal(sv.size(), 5U);
     die_unequal(sv[0], "ab");
     die_unequal(sv[1], "c");
     die_unequal(sv[2], "df");
@@ -671,15 +798,87 @@ static void test_split_words() {
     die_unequal(sv[4], "f  ");
 }
 
-static void test_ssprintf() {
-    die_unequal(
-        tlx::ssprintf("abc %d %s test", 42, "hello"),
-        "abc 42 hello test");
-    die_unequal(
-        tlx::ssnprintf(5, "abc %d %s test", 42, "hello"),
-        "abc 4");
-    die_unequal(
-        tlx::ssnprintf(5, "%d", 42), "42");
+static void test_split_words_view()
+{
+    // simple whitespace split
+    std::vector<tlx::string_view> sv =
+        tlx::split_words_view("  ab c df  fdlk f  ");
+
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "ab");
+    die_unequal(sv[1], "c");
+    die_unequal(sv[2], "df");
+    die_unequal(sv[3], "fdlk");
+    die_unequal(sv[4], "f");
+
+    sv = tlx::split_words_view("ab c df  fdlk f  ");
+
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "ab");
+    die_unequal(sv[1], "c");
+    die_unequal(sv[2], "df");
+    die_unequal(sv[3], "fdlk");
+    die_unequal(sv[4], "f");
+
+    sv = tlx::split_words_view("ab c df  fdlk f");
+
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "ab");
+    die_unequal(sv[1], "c");
+    die_unequal(sv[2], "df");
+    die_unequal(sv[3], "fdlk");
+    die_unequal(sv[4], "f");
+
+    sv = tlx::split_words_view("");
+    die_unequal(sv.size(), 0U);
+
+    sv = tlx::split_words_view("    ");
+    die_unequal(sv.size(), 0U);
+
+    // whitespace split with limit
+    sv = tlx::split_words_view("  ab c   df  fdlk f  ", 3);
+
+    die_unequal(sv.size(), 3U);
+    die_unequal(sv[0], "ab");
+    die_unequal(sv[1], "c");
+    die_unequal(sv[2], "df  fdlk f  ");
+
+    // whitespace split with some strange limits
+    sv = tlx::split_words_view("  ab c df  fdlk f  ", 0);
+    die_unequal(sv.size(), 0U);
+
+    sv = tlx::split_words_view("  ab c df  fdlk f  ", 1);
+
+    die_unequal(sv.size(), 1U);
+    die_unequal(sv[0], "ab c df  fdlk f  ");
+
+    // whitespace split with large limit
+    sv = tlx::split_words_view("  ab  c  df  fdlk f  ", 10);
+
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "ab");
+    die_unequal(sv[1], "c");
+    die_unequal(sv[2], "df");
+    die_unequal(sv[3], "fdlk");
+    die_unequal(sv[4], "f");
+
+    // whitespace split with limit at exactly the end
+    sv = tlx::split_words_view("  ab  c  df  fdlk f  ", 5);
+
+    die_unequal(sv.size(), 5U);
+    die_unequal(sv[0], "ab");
+    die_unequal(sv[1], "c");
+    die_unequal(sv[2], "df");
+    die_unequal(sv[3], "fdlk");
+    die_unequal(sv[4], "f  ");
+}
+
+static void test_ssprintf()
+{
+    die_unequal(tlx::ssprintf("abc %d %s test", 42, "hello"),
+                "abc 42 hello test");
+    die_unequal(tlx::ssnprintf(5, "abc %d %s test", 42, "hello"), "abc 4");
+    die_unequal(tlx::ssnprintf(5, "%d", 42), "42");
 
     // "generic" version
     die_unequal(
@@ -688,54 +887,43 @@ static void test_ssprintf() {
     die_unequal(
         tlx::ssnprintf_generic<std::string>(5, "abc %d %s test", 42, "hello"),
         "abc 4");
-    die_unequal(
-        tlx::ssnprintf_generic<std::string>(5, "%d", 42), "42");
+    die_unequal(tlx::ssnprintf_generic<std::string>(5, "%d", 42), "42");
 }
 
-static void test_replace() {
+static void test_replace()
+{
     // copy variants
-    die_unequal(
-        tlx::replace_first("abcdef abcdef", "abc", "a"), "adef abcdef");
-    die_unequal(
-        tlx::replace_first("abcdef abcdef", "cba", "a"), "abcdef abcdef");
-    die_unequal(
-        tlx::replace_all("abcdef abcdef", "abc", "a"), "adef adef");
-    die_unequal(
-        tlx::replace_all("abcdef abcdef", "cba", "a"), "abcdef abcdef");
+    die_unequal(tlx::replace_first("abcdef abcdef", "abc", "a"), "adef abcdef");
+    die_unequal(tlx::replace_first("abcdef abcdef", "cba", "a"),
+                "abcdef abcdef");
+    die_unequal(tlx::replace_all("abcdef abcdef", "abc", "a"), "adef adef");
+    die_unequal(tlx::replace_all("abcdef abcdef", "cba", "a"), "abcdef abcdef");
 
-    die_unequal(
-        tlx::replace_first("abcdef abcdef", "a", "aaa"),
-        "aaabcdef abcdef");
-    die_unequal(
-        tlx::replace_all("abcdef abcdef", "a", "aaa"),
-        "aaabcdef aaabcdef");
+    die_unequal(tlx::replace_first("abcdef abcdef", "a", "aaa"),
+                "aaabcdef abcdef");
+    die_unequal(tlx::replace_all("abcdef abcdef", "a", "aaa"),
+                "aaabcdef aaabcdef");
 
     // in-place variants
     std::string str1 = "abcdef abcdef";
     std::string str2 = "abcdef abcdef";
-    die_unequal(
-        tlx::replace_first(&str1, "abc", "a"), "adef abcdef");
-    die_unequal(
-        tlx::replace_first(&str2, "cba", "a"), "abcdef abcdef");
+    die_unequal(tlx::replace_first(&str1, "abc", "a"), "adef abcdef");
+    die_unequal(tlx::replace_first(&str2, "cba", "a"), "abcdef abcdef");
 
     str1 = "abcdef abcdef";
     str2 = "abcdef abcdef";
-    die_unequal(
-        tlx::replace_all(&str1, "abc", "a"), "adef adef");
-    die_unequal(
-        tlx::replace_all(&str2, "cba", "a"), "abcdef abcdef");
+    die_unequal(tlx::replace_all(&str1, "abc", "a"), "adef adef");
+    die_unequal(tlx::replace_all(&str2, "cba", "a"), "abcdef abcdef");
 
     str1 = "abcdef abcdef";
     str2 = "abcdef abcdef";
-    die_unequal(
-        tlx::replace_first(&str1, "a", "aaa"), "aaabcdef abcdef");
-    die_unequal(
-        tlx::replace_all(&str2, "a", "aaa"), "aaabcdef aaabcdef");
+    die_unequal(tlx::replace_first(&str1, "a", "aaa"), "aaabcdef abcdef");
+    die_unequal(tlx::replace_all(&str2, "a", "aaa"), "aaabcdef aaabcdef");
 }
 
 template <typename TypeA, typename TypeB>
-void test_starts_with_ends_with_template() {
-
+void test_starts_with_ends_with_template()
+{
     die_unless(tlx::starts_with(TypeA("abcdef"), TypeB("abc")));
     die_unless(!tlx::starts_with(TypeA("abcdef"), TypeB("def")));
     die_unless(tlx::ends_with(TypeA("abcdef"), TypeB("def")));
@@ -758,14 +946,16 @@ void test_starts_with_ends_with_template() {
     die_unless(tlx::ends_with(TypeA(""), TypeB("")));
 }
 
-static void test_starts_with_ends_with() {
+static void test_starts_with_ends_with()
+{
     test_starts_with_ends_with_template<const char*, const char*>();
     test_starts_with_ends_with_template<const char*, std::string>();
     test_starts_with_ends_with_template<std::string, const char*>();
     test_starts_with_ends_with_template<std::string, std::string>();
 }
 
-static void test_toupper_tolower() {
+static void test_toupper_tolower()
+{
     // string-copy functions
     die_unequal(tlx::to_upper(" aBc "), " ABC ");
     die_unequal(tlx::to_lower(" AbCdEfG "), " abcdefg ");
@@ -778,51 +968,121 @@ static void test_toupper_tolower() {
     die_unequal(tlx::to_lower(&str2), "abcdefgh ");
 }
 
-static void test_trim() {
+static void test_trim()
+{
     // string-copy functions
     die_unequal(tlx::trim("  abc  "), "abc");
     die_unequal(tlx::trim("abc  "), "abc");
     die_unequal(tlx::trim("  abc"), "abc");
     die_unequal(tlx::trim("  "), "");
+    die_unequal(tlx::trim("abc  ", ' '), "abc");
 
     die_unequal(tlx::trim_left("  abc  "), "abc  ");
     die_unequal(tlx::trim_left("abc  "), "abc  ");
     die_unequal(tlx::trim_left("  "), "");
+    die_unequal(tlx::trim_left("   abc  ", ' '), "abc  ");
 
     die_unequal(tlx::trim_right("  abc  "), "  abc");
     die_unequal(tlx::trim_right("  abc"), "  abc");
     die_unequal(tlx::trim_right("  "), "");
+    die_unequal(tlx::trim_right("  abc   ", ' '), "  abc");
 
     // in-place functions
     std::string str1 = "  abc  ";
     std::string str2 = "abc  ";
     std::string str3 = "  ";
+    std::string str4 = "  abc  ";
 
     die_unequal(tlx::trim_left(&str1), "abc  ");
     die_unequal(tlx::trim_left(&str2), "abc  ");
     die_unequal(tlx::trim_left(&str3), "");
+    die_unequal(tlx::trim_left(&str4, ' '), "abc  ");
 
     str1 = "  abc  ";
     str2 = "  abc";
     str3 = "  ";
+    str4 = "  abc  ";
 
     die_unequal(tlx::trim_right(&str1), "  abc");
     die_unequal(tlx::trim_right(&str2), "  abc");
     die_unequal(tlx::trim_right(&str3), "");
+    die_unequal(tlx::trim_right(&str4, ' '), "  abc");
 
     str1 = "  abc  ";
     str2 = "  abc";
     str3 = "abc  ";
-    std::string str4 = "  ";
+    str4 = "  ";
+    std::string str5 = "  abc  ";
 
     die_unequal(tlx::trim(&str1), "abc");
     die_unequal(tlx::trim(&str2), "abc");
     die_unequal(tlx::trim(&str3), "abc");
     die_unequal(tlx::trim(&str4), "");
+    die_unequal(tlx::trim(&str5, ' '), "abc");
 }
 
-static void test_word_wrap() {
+static void test_trim_string_view()
+{
+    // string_view-copy functions
+    tlx::string_view sv1("  abc  ");
+    tlx::string_view sv2("abc  ");
+    tlx::string_view sv3("  abc");
+    tlx::string_view sv4("  ");
 
+    die_unequal(tlx::trim(sv1), "abc");
+    die_unequal(tlx::trim(sv2), "abc");
+    die_unequal(tlx::trim(sv3), "abc");
+    die_unequal(tlx::trim(sv4), "");
+    die_unequal(tlx::trim(sv1, ' '), "abc");
+
+    die_unequal(tlx::trim_left(sv1), "abc  ");
+    die_unequal(tlx::trim_left(sv2), "abc  ");
+    die_unequal(tlx::trim_left(sv3), "abc");
+    die_unequal(tlx::trim_left(sv4), "");
+    die_unequal(tlx::trim_left(sv1, ' '), "abc  ");
+
+    die_unequal(tlx::trim_right(sv1), "  abc");
+    die_unequal(tlx::trim_right(sv2), "abc");
+    die_unequal(tlx::trim_right(sv3), "  abc");
+    die_unequal(tlx::trim_right(sv4), "");
+    die_unequal(tlx::trim_right(sv1, ' '), "  abc");
+
+    // in-place functions
+    tlx::string_view str1 = "  abc  ";
+    tlx::string_view str2 = "abc  ";
+    tlx::string_view str3 = "  ";
+    tlx::string_view str4 = "  abc  ";
+
+    die_unequal(tlx::trim_left(&str1), "abc  ");
+    die_unequal(tlx::trim_left(&str2), "abc  ");
+    die_unequal(tlx::trim_left(&str3), "");
+    die_unequal(tlx::trim_left(&str4, ' '), "abc  ");
+
+    str1 = "  abc  ";
+    str2 = "  abc";
+    str3 = "  ";
+    str4 = "  abc  ";
+
+    die_unequal(tlx::trim_right(&str1), "  abc");
+    die_unequal(tlx::trim_right(&str2), "  abc");
+    die_unequal(tlx::trim_right(&str3), "");
+    die_unequal(tlx::trim_right(&str4, ' '), "  abc");
+
+    str1 = "  abc  ";
+    str2 = "  abc";
+    str3 = "abc  ";
+    str4 = "  ";
+    tlx::string_view str5 = "  abc  ";
+
+    die_unequal(tlx::trim(&str1), "abc");
+    die_unequal(tlx::trim(&str2), "abc");
+    die_unequal(tlx::trim(&str3), "abc");
+    die_unequal(tlx::trim(&str4), "");
+    die_unequal(tlx::trim(&str5, ' '), "abc");
+}
+
+static void test_word_wrap()
+{
     const char* text =
         "Alice was beginning to get very tired of sitting by her sister on the "
         "bank, and of having nothing to do: once or twice she had peeped into "
@@ -969,12 +1229,15 @@ int main(int argc, const char** argv)
     test_parse_uri_form_data();
     test_replace();
     test_split();
+    test_split_view();
     test_split_join_quoted();
     test_split_words();
+    test_split_words_view();
     test_ssprintf();
     test_starts_with_ends_with();
     test_toupper_tolower();
     test_trim();
+    test_trim_string_view();
     test_word_wrap();
 
     return 0;

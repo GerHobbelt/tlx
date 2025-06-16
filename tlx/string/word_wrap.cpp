@@ -3,23 +3,26 @@
  *
  * Part of tlx - http://panthema.net/tlx
  *
- * Copyright (C) 2016-2017 Timo Bingmann <tb@panthema.net>
+ * Copyright (C) 2016-2024 Timo Bingmann <tb@panthema.net>
  *
  * All rights reserved. Published under the Boost Software License, Version 1.0
  ******************************************************************************/
 
+#include <tlx/container/string_view.hpp>
 #include <tlx/string/word_wrap.hpp>
-
 #include <cctype>
+#include <string>
 
 namespace tlx {
 
-bool is_space(char ch) {
-    return ch == ' ' || ch == '\f' || ch == '\t' ||
-           ch == '\r' || ch == '\n' || ch == '\v';
+bool is_space(char ch)
+{
+    return ch == ' ' || ch == '\f' || ch == '\t' || ch == '\r' || ch == '\n' ||
+           ch == '\v';
 }
 
-std::string word_wrap(const std::string& str, unsigned int wrap) {
+std::string word_wrap(tlx::string_view str, unsigned int wrap)
+{
     std::string out;
     out.resize(str.size());
 
@@ -32,7 +35,8 @@ std::string word_wrap(const std::string& str, unsigned int wrap) {
         // copy string until the end of the line is reached
         for (std::string::size_type count = 0; count < wrap; ++count)
         {
-            if (i == str.size()) {
+            if (i == str.size())
+            {
                 // end of string reached
                 return out;
             }
@@ -54,7 +58,8 @@ std::string word_wrap(const std::string& str, unsigned int wrap) {
             // turn last space into newline and step counter back
             out[last_space] = '\n';
 
-            if (i == str.size()) {
+            if (i == str.size())
+            {
                 // end of string reached
                 return out;
             }
@@ -67,7 +72,8 @@ std::string word_wrap(const std::string& str, unsigned int wrap) {
             while (i != str.size() && !is_space(str[i]))
                 out[i] = str[i], ++i;
 
-            if (i == str.size()) {
+            if (i == str.size())
+            {
                 // end of string reached
                 return out;
             }
